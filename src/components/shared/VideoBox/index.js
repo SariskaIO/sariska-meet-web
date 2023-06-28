@@ -211,10 +211,6 @@ const VideoBox = ({
       {conference?.getParticipantCount() > 1 &&
         isActiveSpeaker &&
         !isPresenter && <div className={classes.videoBorder}></div>}
-      <Box className={classnames(classes.audioBox, { audioBox: true })}>
-        {audioTrack?.isMuted() ? <MicOffIcon /> : <MicIcon />}
-        {!audioTrack?.isLocal() && <Audio track={audioTrack} />}
-      </Box>
       {videoTrack?.isMuted() ? (
         <Box className={avatarActiveClasses}>
           <Avatar
@@ -243,39 +239,6 @@ const VideoBox = ({
           className={classes.videoWrapper}
         >
           <Video isPresenter={isPresenter} track={videoTrack} />
-        </Box>
-      )}
-      <Box
-        className={classnames(classes.rightControls, { rightControls: true })}
-      >
-        {visiblePinParticipant && (
-          <PinParticipant
-            participantId={participantDetails?.id}
-            pinnedParticipantId={pinnedParticipant.participantId}
-            togglePinParticipant={togglePinParticipant}
-          />
-        )}
-        {raisedHandParticipantIds[participantDetails?.id] && (
-          <Typography className={classes.handRaise}>
-            <PanTool />
-          </Typography>
-        )}
-      </Box>
-      <Box className={classnames(classes.textBox, { userDetails: true })}>
-        <Typography>
-          {localUserId === participantDetails?.id
-            ? "You"
-            : participantDetails?.name}
-        </Typography>
-      </Box>
-      {!isFilmstrip && (
-        <Box>
-          <AudioLevelIndicator passedAudioLevel={audioLevel} />
-        </Box>
-      )}
-      {isTranscription && subtitle.text && (
-        <Box className={classes.subtitle}>
-          <SubTitle subtitle={subtitle} />
         </Box>
       )}
     </Box>

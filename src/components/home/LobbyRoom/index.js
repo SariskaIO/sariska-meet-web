@@ -479,29 +479,6 @@ const LobbyRoom = ({ tracks }) => {
           <Typography className={classes.header}>Create Meeting</Typography>
         }
         </Box>
-        <Box className={!queryParams.meetingId ? classes.permissions : classes.joinPermissions}>
-          {audioTrack?.isMuted() ? (
-            <StyledTooltip title="Unmute Audio">
-              <MicOffIcon onClick={unmuteAudioLocalTrack} />
-            </StyledTooltip>
-          ) : (
-            <StyledTooltip title="Mute Audio">
-              <MicIcon onClick={muteAudioLocalTrack} />
-            </StyledTooltip>
-          )}
-          {videoTrack?.isMuted() ? (
-            <StyledTooltip title="Unmute Video">
-              <VideocamOffIcon onClick={unmuteVideoLocalTrack} />
-            </StyledTooltip>
-          ) : (
-            <StyledTooltip title="Mute Video">
-              <VideocamIcon onClick={muteVideoLocalTrack} />
-            </StyledTooltip>
-          )}
-          <StyledTooltip title="Settings">
-            <SettingsIcon onClick={toggleSettingsDrawer("right", true)} />
-          </StyledTooltip>
-        </Box>
         <Box className={classes.action}>
           <div className={classes.wrapper}>
             <Box className={classes.textBox}>
@@ -558,11 +535,11 @@ const LobbyRoom = ({ tracks }) => {
         <Box style={{textAlign: 'center', position: 'relative'}}>
         <FancyButton 
               homeButton={true}
-              disabled={loading}
+              disabled={!loading}
               onClick={handleSubmit}
               buttonText={buttonText}
             />
-            {loading && (
+            {!loading && (
               <CircularProgress size={24} className={ !queryParams?.meetingId ? classes.buttonProgress : classes.buttonProgressJoin} />
             )}
             </Box>

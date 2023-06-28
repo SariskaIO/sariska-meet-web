@@ -247,19 +247,26 @@ const Home = () => {
                 resolution
             };
 
-            try  {
-                const [audioTrack] = await SariskaMediaTransport.createLocalTracks({devices: ["audio"], resolution});
-                tracks.push(audioTrack);
-            } catch(e) {
-                console.log("failed to fetch audio device");
-            }
+            // try  {
+            //     const [audioTrack] = await SariskaMediaTransport.createLocalTracks({devices: ["desktop"], resolution});
+            //     tracks.push(audioTrack);
+            // } catch(e) {
+            //     console.log("failed to fetch audio device");
+            // }
 
-            try  {
-                const [videoTrack]  = await SariskaMediaTransport.createLocalTracks({devices: ["video"], resolution});
-                tracks.push(videoTrack);
-            } catch(e) {
-                console.log("failed to fetch video device");
-            }
+            // try  {
+            //     const [audioTrack] = await SariskaMediaTransport.createLocalTracks({devices: ["audio"], resolution});
+            //     tracks.push(audioTrack);
+            // } catch(e) {
+            //     console.log("failed to fetch audio device");
+            // }
+
+            // try  {
+            //     const [videoTrack]  = await SariskaMediaTransport.createLocalTracks({devices: ["video"], resolution});
+            //     tracks.push(videoTrack);
+            // } catch(e) {
+            //     console.log("failed to fetch video device");
+            // }
             setLocalTracks(tracks);
             tracks.forEach(track=>dispatch(addLocalTrack(track)));
         };
