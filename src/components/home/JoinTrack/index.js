@@ -30,7 +30,7 @@ const JoinTrack = ({ tracks, name }) => {
     logoContainer: {
       position: 'relative',
       zIndex: 1,
-      height: '40%',
+      height: '39%',
       display: 'flex',
       justifyContent: 'center'
     },
@@ -68,6 +68,7 @@ const JoinTrack = ({ tracks, name }) => {
       }
     },
     videoWrapper: {
+      height: documentHeight,
        "& > div": { 
            borderRadius: 0
        },
@@ -79,6 +80,9 @@ const JoinTrack = ({ tracks, name }) => {
        },
        "& .audioBox": {
           display: "none"
+       },
+       [theme.breakpoints.down("md")]: {
+          height: '60%',
        }
     }
   }));
@@ -106,7 +110,7 @@ const JoinTrack = ({ tracks, name }) => {
           </Avatar>
         </Box>
       ) : (
-        <div  className={classes.videoWrapper} style={{ width: documentWidth, height: documentHeight, overflow: "hidden", position: "relative"}} >
+        <div  className={classes.videoWrapper} style={{ width: documentWidth, overflow: "hidden", position: "relative"}} >
           <VideoBox width={documentWidth} height={documentHeight} participantTracks={tracks} />
         </div>
       )}
