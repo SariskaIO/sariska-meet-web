@@ -547,7 +547,7 @@ const Meeting = () => {
     justifyContent = "space-around";
     paddingTop = 0;
   }
-console.log('typel', layout?.type)
+  
   return (
     <Box
       style={{ justifyContent, paddingTop: paddingTop }}

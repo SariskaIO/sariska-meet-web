@@ -190,11 +190,10 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Home = () => {
-    console.log("reached. ehere")
     const dispatch = useDispatch();
     const resolution = useSelector(state => state.media?.resolution);
     const localTracksRedux = useSelector(state => state.localTrack);
-    SariskaMediaTransport.initialize();
+    SariskaMediaTransport.initialize({disableSimulcast: true});
     SariskaMediaTransport.setLogLevel(SariskaMediaTransport.logLevels.ERROR); //TRACE ,DEBUG, INFO, LOG, WARN, ERROR
     const classes = useStyles();
     const [googleAPIData, setGoogleAPIData] = useState({isSignedIn: false, calenderEntries: []});

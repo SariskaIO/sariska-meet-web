@@ -150,7 +150,6 @@ export function calculateRowsAndColumns(totalParticipant, viewportWidth, viewpor
     if (isAsymmetricView) {
         viewportHeight  = viewportHeight - ( rows + 1 )*12;
         viewportWidth  = viewportWidth - (columns +  1)*12;
-        console.log('vieprt', viewportWidth, lastRowWidth, gridItemWidth)
         
         gridItemHeight = viewportHeight / rows;
         gridItemWidth = viewportWidth / columns;

@@ -147,7 +147,6 @@ const ChatPanel = () => {
     const messages = useSelector((state) => state.message);
     const [currentMessage, setCurrentMessage] = useState("");
     let [fileAttached, setFileAttached] = useState([]);
-    const avatarColors = useSelector(state=>state.color);
     const profile = useSelector(state => state.profile);
     const refEl = useRef(null);
 
