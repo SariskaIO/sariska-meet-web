@@ -3,7 +3,7 @@ import {EXIT_FULL_SCREEN_MODE, GRID, SPEAKER} from "../../constants";
 import { isPortrait } from "../../utils";
 
 const initialState  = {
-    type: isPortrait() ? GRID : SPEAKER,  //default layout,
+    type: SPEAKER,  //default layout,
     mode: EXIT_FULL_SCREEN_MODE, //default mode,
     pinnedParticipant: {},
     presenterParticipantIds: [],
@@ -14,7 +14,7 @@ const initialState  = {
     moderator: {},
 };
 
-export const layoutInitialState  = { ... initialState };
+export const layoutInitialState  = { ...initialState };
 
 export const layout = (state = initialState, action) => {
     switch (action.type) {
@@ -52,6 +52,7 @@ export const layout = (state = initialState, action) => {
             } else {
                 state.presenterParticipantIds = state.presenterParticipantIds.filter(item=>item!==action.payload.participantId); 
             }
+            
             return {...state};
         case SET_PIN_PARTICIPANT:
             state.pinnedParticipant = action.payload.participantId ? {isPresenter: action.payload.type, participantId: action.payload.participantId} : {} ;

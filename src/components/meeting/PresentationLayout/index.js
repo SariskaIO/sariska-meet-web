@@ -40,7 +40,6 @@ const PresentationLayout = ({dominantSpeakerId}) => {
 
     const localTracks = useSelector(state => state.localTrack);
     const remoteTracks = useSelector(state => state.remoteTrack);
-
     const constraints = {
         "colibriClass": "ReceiverVideoConstraints",
         "defaultConstraints": { "maxHeight":  180 }

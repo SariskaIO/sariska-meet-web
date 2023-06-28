@@ -25,13 +25,7 @@ export const remoteTrack = (state = initialState, action) => {
             state[participantId][index] = action.payload;
             return {...state};
         case REMOVE_REMOTE_TRACK:
-            participantId = action.payload.getParticipantId();
-            if (participantId) {
-                state[participantId] = state[participantId].filter((item) => item.getId() !== action.payload.getId());
-            }
-            if (state[participantId]?.length === 0) {
-                delete state[participantId];
-            }
+            state = {};
             return {...state};
         case REMOVE_ALL_REMOTE_TRACK:
             state = {};

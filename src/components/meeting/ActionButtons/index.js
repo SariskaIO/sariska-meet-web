@@ -1,8 +1,7 @@
 import {
-  Badge,
   Box,
   Hidden,
-  makeStyles,
+  makeStyles
 } from "@material-ui/core";
 import React, { useEffect, useRef, useState } from "react";
 import SariskaMediaTransport from "sariska-media-transport";
@@ -16,12 +15,14 @@ import StopScreenShareIcon from '@material-ui/icons/StopScreenShare';
 import AlbumIcon from "@material-ui/icons/Album";
 import {
   addLocalTrack,
-  removeLocalTrack,
+  removeLocalTrack
 } from "../../../store/actions/track";
 import {
   ENTER_FULL_SCREEN_MODE,
   EXIT_FULL_SCREEN_MODE,
   RECORDING_ERROR_CONSTANTS,
+  GET_PRESENTATION_STATUS,
+  RECEIVED_PRESENTATION_STATUS,
   DROPBOX_APP_KEY,
 } from "../../../constants";
 import {
@@ -33,31 +34,22 @@ import {
   exitFullscreen,
   formatAMPM,
   isFullscreen,
-  requestFullscreen,
+  requestFullscreen
 } from "../../../utils";
-import { withStyles } from "@material-ui/styles";
 import { showSnackbar } from "../../../store/actions/snackbar";
 import StyledTooltip from "../../shared/StyledTooltip";
 import { showNotification } from "../../../store/actions/notification";
 import { authorizeDropbox } from "../../../utils/dropbox-apis";
 
-const StyledBadge = withStyles((theme) => ({
-  badge: {
-    background: color.primary,
-    top: 6,
-    right: 10,
-  },
-}))(Badge);
-
 const useStyles = makeStyles((theme) => ({
   root: {
     height: "44px",
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
     bottom: "16px",
     width: "100%",
-    position: "fixed",
+    //position: "fixed",
     color: color.white,
     [theme.breakpoints.down("sm")]: {
       bottom: "0px",
@@ -66,8 +58,9 @@ const useStyles = makeStyles((theme) => ({
     },
     "& svg": {
       padding: "8px",
-      borderRadius: "8px",
-      marginRight: "2px",
+      background: color.secondary,
+      borderRadius: '50%',
+     // marginRight: "12px",
       [theme.breakpoints.down("sm")]: {
         background: color.secondary,
         borderRadius: '50%',
@@ -93,7 +86,7 @@ const useStyles = makeStyles((theme) => ({
   infoContainer: {
     marginLeft: "20px",
     display: "flex",
-    width: "350px",
+  //  width: "350px",
   },
   separator: {
     marginLeft: "10px",
@@ -109,19 +102,49 @@ const useStyles = makeStyles((theme) => ({
       marginRight: "12px",
     },
   },
+
+  disabledScreenShare: {
+    padding: "8px",
+    marginRight: "2px",
+    borderRadius: "8px",
+    [theme.breakpoints.down("sm")]: {
+      borderRadius: '50%',
+      marginRight: "12px",
+    },
+    "&:hover": {
+      opacity: "1",
+      cursor: "inherit",
+      color: color.white,
+    },
+  },
+  recordingContainer: {
+    marginLeft: '12px',
+    [theme.breakpoints.down("sm")]: {
+      marginRight: '12px',
+    }
+  },
   permissions: {
     display: "flex",
     alignItems: "center",
-    padding: "0px 5px",
-    backgroundColor: color.secondary,
+    padding: "0px",
+    //backgroundColor: color.secondary,
     borderRadius: "7.5px",
     marginRight: "24px",
     [theme.breakpoints.down("sm")]: {
       backgroundColor: "transparent",
       margin: 'auto',
       position: 'relative',
-      bottom: '0px'
+      bottom: '0px',
+      padding: "0px 5px",
     },
+  },
+  endMd: {
+    display: 'flex',
+    marginRight: '24px',
+    marginLeft: '24px',
+    [theme.breakpoints.down("md")]: {
+      display: 'none'
+    }
   },
   end: {
     background: `${color.red} !important`,
@@ -138,11 +161,17 @@ const useStyles = makeStyles((theme) => ({
       cursor: "pointer",
       color: `${color.white} !important`,
     },
-    [theme.breakpoints.down("sm")]: {
-      padding: "8px !important",
+    [theme.breakpoints.down("md")]: {
+      padding: "6px 4px !important",
       width: "40px",
       fontSize: "24px",
     },
+  },
+  endSM: {
+    display: 'none',
+    [theme.breakpoints.down("md")]: {
+      display: 'flex'
+    }
   },
   subIcon: {
     border: "none !important",
@@ -205,7 +234,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ActionButtons = ({ dominantSpeakerId }) => {
+const ActionButtons = () => {
   const history = useHistory();
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -216,7 +245,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
   const profile = useSelector((state) => state.profile);
   const [featureStates, setFeatureStates] = useState({});
   const recordingSession = useRef(null);
-
+  const layout = useSelector(state=>state.layout);
 
   const action = (actionData) => {
     featureStates[actionData.key] = actionData.value;
@@ -267,37 +296,6 @@ const ActionButtons = ({ dominantSpeakerId }) => {
     dispatch(removeLocalTrack(desktopTrack));
     conference.setLocalParticipantProperty("presenting", "stop");
     setPresenting(false);
-  };
-
-
-  const toggleFullscreen = () => {
-    if (isFullscreen()) {
-      exitFullscreen();
-    } else {
-      requestFullscreen();
-    }
-  };
-
-  const AddFShandler = () => {
-    if (isFullscreen()) {
-      dispatch(setFullScreen(ENTER_FULL_SCREEN_MODE));
-    } else {
-      dispatch(setFullScreen(EXIT_FULL_SCREEN_MODE));
-    }
-  };
-
-  const addFullscreenListeners = () => {
-    document.addEventListener("fullscreenchange", AddFShandler);
-    document.addEventListener("webkitfullscreenchange", AddFShandler);
-    document.addEventListener("mozfullscreenchange", AddFShandler);
-    document.addEventListener("MSFullscreenChange", AddFShandler);
-  };
-
-  const removeFullscreenListeners = () => {
-    document.removeEventListener("fullscreenchange", AddFShandler);
-    document.removeEventListener("webkitfullscreenchange", AddFShandler);
-    document.removeEventListener("mozfullscreenchange", AddFShandler);
-    document.removeEventListener("MSFullscreenChange", AddFShandler);
   };
 
 
@@ -368,11 +366,38 @@ const ActionButtons = ({ dominantSpeakerId }) => {
       localStorage.getItem("recording_session_id")
     );
   };
-  
 
+  const toggleFullscreen = () => {
+    if (isFullscreen()) {
+      exitFullscreen();
+    } else {
+      requestFullscreen();
+    }
+  };
+
+  const AddFShandler = () => {
+    if (isFullscreen()) {
+      dispatch(setFullScreen(ENTER_FULL_SCREEN_MODE));
+    } else {
+      dispatch(setFullScreen(EXIT_FULL_SCREEN_MODE));
+    }
+  };
+
+  const addFullscreenListeners = () => {
+    document.addEventListener("fullscreenchange", AddFShandler);
+    document.addEventListener("webkitfullscreenchange", AddFShandler);
+    document.addEventListener("mozfullscreenchange", AddFShandler);
+    document.addEventListener("MSFullscreenChange", AddFShandler);
+  };
+
+  const removeFullscreenListeners = () => {
+    document.removeEventListener("fullscreenchange", AddFShandler);
+    document.removeEventListener("webkitfullscreenchange", AddFShandler);
+    document.removeEventListener("mozfullscreenchange", AddFShandler);
+    document.removeEventListener("MSFullscreenChange", AddFShandler);
+  };
 
   useEffect(() => {
-
     const interval = setInterval(() => {
       setTime(formatAMPM(new Date()));
     }, 1000);
@@ -384,6 +409,41 @@ const ActionButtons = ({ dominantSpeakerId }) => {
       removeFullscreenListeners();
     };
   }, []);
+
+  useEffect(() => {
+    if (conference.getParticipantsWithoutHidden()[0]?._id) {
+      setTimeout(
+        () =>
+          conference.sendEndpointMessage(
+            conference.getParticipantsWithoutHidden()[0]._id,
+            { action: GET_PRESENTATION_STATUS }
+          ),
+        1000
+      );
+    }
+    const checkPresentationStatus = (participant, payload) => {
+      if (payload?.action === GET_PRESENTATION_STATUS) {
+        conference.sendEndpointMessage(participant._id, {
+          action: RECEIVED_PRESENTATION_STATUS,
+          status: featureStates.whiteboard
+            ? "whiteboard"
+            : featureStates.sharedDocument
+            ? "sharedDocument"
+            : "none",
+        });
+      }
+    };
+    conference.addEventListener(
+      SariskaMediaTransport.events.conference.ENDPOINT_MESSAGE_RECEIVED,
+      checkPresentationStatus
+    );
+    return () => {
+      conference.removeEventListener(
+        SariskaMediaTransport.events.conference.ENDPOINT_MESSAGE_RECEIVED,
+        checkPresentationStatus
+      );
+    };
+  }, [featureStates.whiteboard, featureStates.sharedDocument]);
 
   useEffect(() => {
     conference.getParticipantsWithoutHidden().forEach((item) => {
@@ -441,36 +501,47 @@ const ActionButtons = ({ dominantSpeakerId }) => {
           <Box>{profile.meetingTitle}</Box>
         </Box>
       </Hidden>
-      <Hidden mdDown>
+      <Box className={classes.endMd}>
         <StyledTooltip title="Leave Call">
           <CallEndIcon onClick={leaveConference} className={classes.end} />
         </StyledTooltip>
-      </Hidden>
+      </Box>
       <Box className={classes.permissions}>
+        {
+          (layout.presenterParticipantIds?.length === 0  || (layout.presenterParticipantIds?.length>0 && 
+            layout.presenterParticipantIds.find(item=>item===conference.myUserId())))
+            ?
+            <StyledTooltip title={presenting ? "Stop Presenting" : "Share Screen"}>
+              {presenting ? (
+                <StopScreenShareIcon className={classnames(classes.active, classes.screenShare)}
+                onClick={stopPresenting} />
+              ) : (
+                <ScreenShareIcon className={ classes.screenShare}
+                onClick={shareScreen} />
+              )}
+            </StyledTooltip>
+            :
+            <StyledTooltip title={"Screen is already being shared by someone else"}>
+              <ScreenShareIcon className={ classes.disabledScreenShare} />
+            </StyledTooltip>
+        }
+        <Box className={classes.recordingContainer}>
+          <StyledTooltip title={featureStates.recording ? "Stop Recording" : "Start Recording"}>
+            {featureStates.recording ? (
+              <AlbumIcon className={classnames(classes.active, classes.screenShare)}
+              onClick={stopRecording} />
+            ) : (
+              <AlbumIcon className={ classes.screenShare}
+              onClick={startRecording} />
+            )}
+          </StyledTooltip>
+        </Box>
         
-        <StyledTooltip title={presenting ? "Stop Presenting" : "Share Screen"}>
-          {presenting ? (
-            <StopScreenShareIcon className={classnames(classes.active, classes.screenShare)}
-            onClick={stopPresenting} />
-          ) : (
-            <ScreenShareIcon className={ classes.screenShare}
-             onClick={shareScreen} />
-          )}
-        </StyledTooltip>
-        <StyledTooltip title={featureStates.recording ? "Stop Recording" : "Start Recording"}>
-          {featureStates.recording ? (
-            <AlbumIcon className={classnames(classes.active, classes.screenShare)}
-            onClick={stopRecording} />
-          ) : (
-            <AlbumIcon className={ classes.screenShare}
-             onClick={startRecording} />
-          )}
-        </StyledTooltip>
-        <Hidden mdUp>
+        <Box className={classes.endSM}>
         <StyledTooltip title="Leave Call">
           <CallEndIcon onClick={leaveConference} className={classes.end} />
         </StyledTooltip>
-      </Hidden>
+      </Box>
       </Box>
     </Box>
   );

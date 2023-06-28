@@ -1,10 +1,8 @@
 import {Box, makeStyles} from '@material-ui/core';
 import React from 'react'
 import VideoBox from '../../shared/VideoBox';
-import ParticipantPane from "../../shared/ParticipantPane";
 import {useSelector} from "react-redux";
 import {useWindowResize} from "../../../hooks/useWindowResize";
-import {useDocumentSize} from "../../../hooks/useDocumentSize";
 import classnames from "classnames";
 import * as Constants from "../../../constants";
 
@@ -23,7 +21,6 @@ const SpeakerLayout = ({dominantSpeakerId}) => {
     const layout = useSelector(state=>state.layout);
     const totalParticipantGrid = conference?.getParticipantCount()+layout.presenterParticipantIds.length;
     let {viewportWidth, viewportHeight} = useWindowResize(totalParticipantGrid);
-    const {documentWidth, documentHeight} = useDocumentSize();
     const localTracks = useSelector(state => state.localTrack);
     const remoteTracks = useSelector(state => state.remoteTrack);
     const resolution = useSelector(state => state.media?.resolution);
@@ -31,11 +28,12 @@ const SpeakerLayout = ({dominantSpeakerId}) => {
     const classes = useStyles();
     let largeVideoId, isPresenter, participantTracks, participantDetails, justifyContent;
 
-    if ( conference.getParticipantCount() === 2 ) {
-        largeVideoId = conference.getParticipantsWithoutHidden()[0]?._id;
-    }
-    largeVideoId = layout.pinnedParticipant.participantId || layout.presenterParticipantIds.slice(0).pop() || largeVideoId || dominantSpeakerId || myUserId;
+    // if ( conference.getParticipantCount() === 2 ) {
+    //     largeVideoId = conference.getParticipantsWithoutHidden()[0]?._id;
+    // }
+    largeVideoId = layout.pinnedParticipant.participantId || layout.presenterParticipantIds.slice(0).pop() || dominantSpeakerId || myUserId;
     isPresenter = layout.presenterParticipantIds.find(item=>item===largeVideoId);
+    
     if ( layout.pinnedParticipant.isPresenter === false ) {
         isPresenter = false;
     }
@@ -89,7 +87,7 @@ const SpeakerLayout = ({dominantSpeakerId}) => {
                 participantTracks={participantTracks}
                 localUserId={conference.myUserId()}
             />
-            <ParticipantPane
+            {/* <ParticipantPane
                 isPresenter={isPresenter}
                 panelHeight = {layout.mode === Constants.ENTER_FULL_SCREEN_MODE ? documentHeight - 108 :documentHeight - 88}
                 gridItemWidth = {218}    
@@ -98,7 +96,7 @@ const SpeakerLayout = ({dominantSpeakerId}) => {
                 largeVideoId={largeVideoId} 
                 localTracks={localTracks} 
                 remoteTracks={remoteTracks}
-            />
+            /> */}
         </Box>
     )
 }

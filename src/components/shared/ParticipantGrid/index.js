@@ -61,7 +61,7 @@ const ParticipantGrid = ({ dominantSpeakerId }) => {
                                 <Box className={classes.containerItem} style={{ 
                                     left: getLeftTop(i, j, gridItemWidth, gridItemHeight, offset, lastRowOffset, rows, participants.length, viewportHeight, lastRowWidth, documentHeight).left, 
                                     top: getLeftTop(i, j, gridItemWidth, gridItemHeight, offset, lastRowOffset, rows, participants.length, viewportHeight, lastRowWidth, documentHeight).top, 
-                                    width: rows === (i - 1) && lastRowWidth ? lastRowWidth : gridItemWidth,
+                                    width: viewportWidth,
                                     height: gridItemHeight
                                 }}>
                                     <VideoBox key={i * columns + j}

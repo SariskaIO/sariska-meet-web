@@ -28,10 +28,11 @@ const JoinTrack = ({ tracks, name }) => {
       }
     },
     logoContainer: {
-      position: 'absolute',
-      top:  videoTrack?.isMuted() ? '20px' : '12px',
+      position: 'relative',
       zIndex: 1,
-      left:  videoTrack?.isMuted() ? '20px' : '12px',
+      height: '40%',
+      display: 'flex',
+      justifyContent: 'center'
     },
     avatarBox: {
         height: '100%',
@@ -90,7 +91,7 @@ const JoinTrack = ({ tracks, name }) => {
     >
       <Hidden mdUp>
       <Box className={classes.logoContainer}>
-      <Logo height={ videoTrack?.isMuted() ? '35px' : "45px"} />
+      <Logo height={"80px"} />
       </Box>
       </Hidden>
       {videoTrack?.isMuted() ? (

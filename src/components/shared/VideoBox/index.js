@@ -200,38 +200,17 @@ const VideoBox = ({
       isPresenter,
       isActiveSpeaker
     );
-  let avatarColor = participantDetails?.avatar || profile?.color;
+    
   return (
     <Box
-      style={{ width: `${width}px`, height: `${height}px` }}
+      style={{ width: `${ window.innerWidth < 1400 ? '100%' : width + 'px'}`, height: `${height}px` }}
       onMouseEnter={() => setVisiblePinPartcipant(true)}
       onMouseLeave={() => setVisiblePinPartcipant(false)}
       className={classes.root}
-    >
-      {conference?.getParticipantCount() > 1 &&
-        isActiveSpeaker &&
-        !isPresenter && <div className={classes.videoBorder}></div>}
-      {videoTrack?.isMuted() ? (
-        <Box className={avatarActiveClasses}>
-          <Avatar
-            src={null}
-            style={
-              isFilmstrip
-                ? {
-                    boxShadow: videoShadow(audioLevel),
-                    background: avatarColor,
-                  }
-                : { background: avatarColor }
-            }
-            className={audioIndicatorActiveClasses}
-          >
-            {participantDetails?.name?.slice(0, 1)?.toUpperCase()}
-          </Avatar>
-        </Box>
-      ) : (
+    > 
         <Box
           style={{
-            width: `${(videoStreamHeight * 16) / 9}px`,
+            width: `${window.innerWidth < 1400 ? '100%' : (videoStreamHeight * 16) / 9 + 'px'}`,
             height: `${videoStreamHeight}px`,
             left: `-${videoStreamDiff / 2}px`,
             position: "absolute",
@@ -240,7 +219,6 @@ const VideoBox = ({
         >
           <Video isPresenter={isPresenter} track={videoTrack} />
         </Box>
-      )}
     </Box>
   );
 };

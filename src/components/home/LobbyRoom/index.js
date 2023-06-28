@@ -187,8 +187,8 @@ const LobbyRoom = ({ tracks }) => {
       [theme.breakpoints.down("sm")]: {
         padding: "24px 0",
         backgroundColor: videoTrack?.isMuted() ? color.blurEffect : color.lightBlurEffect,
-        border: `none`,
-        minHeight: 'fit-content',
+        minHeight:queryParams.meetingId ? '40vh' : '60vh',
+        border: `1px solid ${color.whitePointOne}`,
         borderRadius: "20px 20px 0px 0px",
         marginLeft: 0,
         marginRight: 0,
