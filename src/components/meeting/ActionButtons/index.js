@@ -314,25 +314,11 @@ const ActionButtons = () => {
       );
     }
 
-    const response = await authorizeDropbox();
-    if (!response?.token) {
-      return dispatch(
-        showNotification({
-          severity: "error",
-          message: "Recording failed no dropbox token",
-        })
-      );
-    }
     const appData = {
-      file_recording_metadata: {
-        upload_credentials: {
-          service_name: "dropbox",
-          token: response.token,
-          app_key: DROPBOX_APP_KEY,
-          r_token: response.rToken,
-        },
-      },
-    };
+      file_recording_metadata : {
+        'share': true
+      }
+    }
 
     dispatch(
       showSnackbar({
