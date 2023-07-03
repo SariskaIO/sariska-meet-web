@@ -77,16 +77,6 @@ const Meeting = () => {
   const classes = useStyles();
   let ingoreFirstEvent = true;
 
-  const allowLobbyAccess = (userId) => {
-    conference.lobbyApproveAccess(userId);
-    setLobbyUser((lobbyUser) => lobbyUser.filter((item) => item.id !== userId));
-  };
-
-  const denyLobbyAccess = (userId) => {
-    conference.lobbyDenyAccess(userId);
-    setLobbyUser((lobbyUser) => lobbyUser.filter((item) => item.id !== userId));
-  };
-
   const deviceListChanged = async (devices) => {
     let selectedDeviceOld,
       audioInputDeviceOld,

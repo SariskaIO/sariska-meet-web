@@ -1,46 +1,31 @@
 import {
   Box,
-  Button,
   Hidden,
   makeStyles,
-  Snackbar,
-  Tooltip,
   Typography,
 } from "@material-ui/core";
 import React, { useEffect, useState, useRef } from "react";
 import SariskaMediaTransport from "sariska-media-transport";
 import { color } from "../../../assets/styles/_color";
 import { useHistory } from "react-router-dom";
-import { localTrackMutedChanged } from "../../../store/actions/track";
 import { addConference } from "../../../store/actions/conference";
 import {
   getToken,
-  trimSpace,
-  detectUpperCaseChar,
-  getRandomColor
+  getRandomColor,
+  getMeetingId
 } from "../../../utils";
 import { addThumbnailColor } from "../../../store/actions/color";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import CircularProgress from "@material-ui/core/CircularProgress";
-import MicIcon from '@material-ui/icons/Mic';
-import MicOffIcon from '@material-ui/icons/MicOff';
-import VideocamIcon from '@material-ui/icons/Videocam';
-import VideocamOffIcon from '@material-ui/icons/VideocamOff';
-import SettingsIcon from '@material-ui/icons/Settings';
 import TextInput from "../../shared/TextInput";
 import { setProfile, setMeeting , updateProfile} from "../../../store/actions/profile";
 import JoinTrack from "../JoinTrack";
 import { addConnection } from "../../../store/actions/connection";
 import SnackbarBox from "../../shared/Snackbar";
-import { showNotification } from "../../../store/actions/notification";
 import { setDisconnected } from "../../../store/actions/layout";
 import Logo from "../../shared/Logo";
-import DrawerBox from "../../shared/DrawerBox";
-import SettingsBox from "../../meeting/Settings";
 import FancyButton from "../../shared/FancyButton";
-import StyledTooltip from "../../shared/StyledTooltip";
-import Icons from "../../shared/iconList";
 
 
 const LobbyRoom = ({ tracks }) => {
@@ -49,18 +34,14 @@ const LobbyRoom = ({ tracks }) => {
   const videoTrack =  useSelector((state) => state.localTrack).find(track=>track?.isVideoTrack());  
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
-  const [meetingTitle, setMeetingTitle] = useState("");
+  const [meetingId, setMeetingId] = useState();
   const [name, setName] = useState("");
   const [buttonText, setButtonText] = useState("Start Meeting");
-  const [accessDenied, setAccessDenied] = useState(false);
   const profile = useSelector((state) => state.profile);
   const queryParams = useParams();
   const iAmRecorder = window.location.hash.indexOf("iAmRecorder") >= 0;
   const testMode = window.location.hash.indexOf("testMode") >= 0;
   const notification = useSelector((state) => state.notification);
-  const [settingsState, setSettingsState] = React.useState({
-    right: false,
-  });
   const moderator = useRef(true);
 
   const useStyles = makeStyles((theme) => ({
@@ -252,38 +233,15 @@ const LobbyRoom = ({ tracks }) => {
   }));
 
   const classes = useStyles();
-
-  const handleTitleChange = (e) => {
-    setMeetingTitle(trimSpace(e.target.value.toLowerCase()));
-  };
-
-  const handleUserNameChange = (e) => {
-    setName(e.target.value);
-    if (e.target.value.length === 1 ) {
-      dispatch(updateProfile({key: "color", value: getRandomColor()}));
-    }
-    if (!e.target.value) {
-      dispatch(updateProfile({key: "color", value: null}));
-    }
-  };
   
-  const handleSubmit = async () => {
-    if (!meetingTitle) {
-      dispatch(
-        showNotification({
-          message: "Meeting Title is required",
-          severity: "warning",
-          autoHide: true,
-        })
-      );
-      return;
-    }
-
+  const handleSubmit = async (queryMeetingId) => {
+    console.log('submitted')
     setLoading(true);
     let avatarColor = profile?.color ?  profile?.color : getRandomColor();
     dispatch(updateProfile({key: "color", value: avatarColor}));
-
-    const token = await getToken(profile, name, avatarColor);
+    const token = await getToken();
+    let meetingTitle = queryMeetingId ? queryMeetingId : meetingId;
+    console.log('tokne1', token, meetingTitle);
     const connection = new SariskaMediaTransport.JitsiConnection(
       token,
       meetingTitle,
@@ -294,7 +252,7 @@ const LobbyRoom = ({ tracks }) => {
       SariskaMediaTransport.events.connection.CONNECTION_ESTABLISHED,
       () => {
         dispatch(addConnection(connection));
-        createConference(connection);
+        createConference(connection, meetingTitle);
       }
     );
 
@@ -305,7 +263,7 @@ const LobbyRoom = ({ tracks }) => {
         if (
           error === SariskaMediaTransport.errors.connection.PASSWORD_REQUIRED
         ) {
-          const token = await getToken(profile, name, moderator.current);
+          const token = await getToken();
           connection.setToken(token); // token expired, set a new token
         }
         if (
@@ -327,10 +285,7 @@ const LobbyRoom = ({ tracks }) => {
     connection.connect();
   };
 
-  const createConference = async (connection) => {
-    // const conference = connection.initJitsiConference({
-    //   createVADProcessor: SariskaMediaTransport.effects.createRnnoiseProcessor,
-    // });
+  const createConference = async (connection, meetingTitle) => {
     const conference = connection.initJitsiConference();
     tracks.forEach(async track => await conference.addTrack(track));
 
@@ -348,8 +303,9 @@ const LobbyRoom = ({ tracks }) => {
     conference.addEventListener(
       SariskaMediaTransport.events.conference.USER_ROLE_CHANGED,
       (id) => {
+        console.log('USER_ROLE_CHANGED', id, conference, conference.isModerator())
         if (conference.isModerator() && !testMode) {
-          conference.enableLobby();
+          //conference.enableLobby();
           history.push(`/${meetingTitle}`);
         } else {
           history.push(`/${meetingTitle}`);
@@ -367,101 +323,46 @@ const LobbyRoom = ({ tracks }) => {
     conference.addEventListener(
       SariskaMediaTransport.events.conference.USER_JOINED,
       (id) => {
-        dispatch(
-          addThumbnailColor({ participantId: id, color: getRandomColor() })
-        );
+        console.log('user_joined', id)
       }
     );
 
-    conference.addEventListener(
-      SariskaMediaTransport.events.conference.CONFERENCE_FAILED,
-      async (error) => {
-        if (
-          error === SariskaMediaTransport.errors.conference.MEMBERS_ONLY_ERROR
-        ) {
-          setButtonText("Asking to join");
-          conference.joinLobby(name || conference?.getLocalUser()?.name);
-        }
-
-        if (
-          error ===
-          SariskaMediaTransport.errors.conference.CONFERENCE_ACCESS_DENIED
-        ) {
-          setAccessDenied(true);
-          setButtonText("Join Meeting");
-          setLoading(false);
-          setTimeout(() => setAccessDenied(false), 2000);
-        }
-      }
-    );
     conference.join();
   };
 
-  const unmuteAudioLocalTrack = async () => {
-    await audioTrack?.unmute();
-    dispatch(localTrackMutedChanged());
-  };
-
-  const muteAudioLocalTrack = async () => {
-    await audioTrack?.mute();
-    dispatch(localTrackMutedChanged());
-  };
-
-  const unmuteVideoLocalTrack = async () => {
-    await videoTrack?.unmute();
-    dispatch(localTrackMutedChanged());
-  };
-
-  const muteVideoLocalTrack = async () => {
-    await videoTrack?.mute();
-    dispatch(localTrackMutedChanged());
-  };
-
-  if (iAmRecorder && !meetingTitle) {
+  if (iAmRecorder && !meetingId) {
     setName("recorder");
-    setMeetingTitle(queryParams.meetingId);
+    setMeetingId(queryParams.meetingId);
   }
-
+console.log('meeting', meetingId, testMode, iAmRecorder, window.location)
   useEffect(() => {
-    if (meetingTitle && (testMode || iAmRecorder)) {
+    if (meetingId && (testMode || iAmRecorder)) {
+      console.log('firstrun')
       handleSubmit();
     }
-  }, [meetingTitle]);
+  }, [meetingId]);
 
   useEffect(() => {
-    if ((!audioTrack || !videoTrack) && !iAmRecorder ) {
+    if(queryParams?.meetingTitle){
+    }else{
+      
+    }
+    if (!iAmRecorder ) {
         setLoading(true);
     } else {
         setLoading(false);
     }
-  }, [audioTrack, videoTrack]);
-
+  }, []);
 
   useEffect(() => {
     if (queryParams.meetingId) {
-      setButtonText("Join Meeting");
-      setMeetingTitle(queryParams.meetingId);
+      console.log('secondrun')
+      setMeetingId(queryParams.meetingId);
+      handleSubmit(queryParams.meetingId);
+    }else{
+      setMeetingId(getMeetingId())
     }
-    setName(profile.name);
-  }, [profile?.name]);
-
-  const toggleSettingsDrawer = (anchor, open) => (event) => {
-    if (
-      event.type === "keydown" &&
-      (event.key === "Tab" || event.key === "Shift")
-    ) {
-      return;
-    }
-    setSettingsState({ ...settingsState, [anchor]: open });
-  };
-
-  const settingsList = (anchor) => (
-    <Box
-      onKeyDown={toggleSettingsDrawer(anchor, false)}
-    >
-      <SettingsBox onClick={toggleSettingsDrawer("right", false)}/>
-    </Box>
-  );
+  }, []);
 
   return (
     <Box className={classes.root}>
@@ -472,66 +373,6 @@ const LobbyRoom = ({ tracks }) => {
           <Logo height={"80px"} />
         </Box>
         </Hidden>
-        <Box>
-        {queryParams.meetingId ? 
-          <Typography className={classes.headerJoin}>Join {queryParams.meetingId}</Typography>
-          :
-          <Typography className={classes.header}>Create Meeting</Typography>
-        }
-        </Box>
-        <Box className={classes.action}>
-          <div className={classes.wrapper}>
-            <Box className={classes.textBox}>
-              {!queryParams.meetingId ? <>
-              <TextInput
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleSubmit();
-                  }
-                  // if (e.charCode === 32) {
-                  //   dispatch(
-                  //     showNotification({
-                  //       message: "Space is not allowed",
-                  //       severity: "warning",
-                  //       autoHide: true,
-                  //     })
-                  //   );
-                  // // } else if (detectUpperCaseChar(e.key)) {
-                  // //   dispatch(
-                  // //     showNotification({
-                  // //       message: "Capital Letter is not allowed",
-                  // //       severity: "warning",
-                  // //       autoHide: true,
-                  // //     })
-                  // //   );
-                  // }
-                }}
-                label="Meeting Title"
-                width="20vw"
-                value={meetingTitle}
-                onChange={handleTitleChange}
-              />
-              </> : 
-              null}
-              <Box className={classes.userBox}>
-                <TextInput
-                  onKeyPress={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleSubmit();
-                    }
-                  }}
-                  label="Username"
-                  width="20vw"
-                  value={name}
-                  onChange={handleUserNameChange}
-                />
-              </Box>
-            </Box>
-            
-          </div>
-        </Box>
         <Box style={{textAlign: 'center', position: 'relative'}}>
         <FancyButton 
               homeButton={true}
@@ -544,22 +385,6 @@ const LobbyRoom = ({ tracks }) => {
             )}
             </Box>
       </Box>
-      <DrawerBox
-        open={settingsState["right"]}
-        onClose={toggleSettingsDrawer("right", false)}
-        top="50px"
-      >
-        {settingsList("right")}
-      </DrawerBox>
-      <Snackbar
-        anchorOrigin={{
-          vertical: "top",
-          horizontal: "center",
-        }}
-        autoHideDuration={2000}
-        open={accessDenied}
-        message="Conference access denied by moderator"
-      />
       <SnackbarBox notification={notification} />
     </Box>
   );

@@ -1,15 +1,11 @@
 import React, {useEffect, useState} from "react";
 
-import {makeStyles, Box, Card, Grid, Typography, Tooltip} from "@material-ui/core";
+import {makeStyles, Box, Grid} from "@material-ui/core";
 import {color} from "../../assets/styles/_color";
 import LobbyRoom from "../../components/home/LobbyRoom";
 import SariskaMediaTransport from "sariska-media-transport";
 import {addLocalTrack} from "../../store/actions/track";
 import {useDispatch, useSelector} from "react-redux";
-import googleApi from "../../utils/google-apis";
-import {setProfile} from "../../store/actions/profile";
-import {getMeetingId} from "../../utils";
-import { microsoftCalendarApi } from "../../utils/microsoft-apis";
 import { setDevices } from "../../store/actions/media";
 
 const useStyles = makeStyles((theme) => ({
@@ -191,40 +187,12 @@ const useStyles = makeStyles((theme) => ({
 
 const Home = () => {
     const dispatch = useDispatch();
-    const resolution = useSelector(state => state.media?.resolution);
     const localTracksRedux = useSelector(state => state.localTrack);
     SariskaMediaTransport.initialize({disableSimulcast: true});
     SariskaMediaTransport.setLogLevel(SariskaMediaTransport.logLevels.ERROR); //TRACE ,DEBUG, INFO, LOG, WARN, ERROR
     const classes = useStyles();
-    const [googleAPIData, setGoogleAPIData] = useState({isSignedIn: false, calenderEntries: []});
     const [localTracks, setLocalTracks] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [updateCalenderLoader, setUpdateCalenderLoader] = useState(null);
     const iAmRecorder = window.location.hash.indexOf("iAmRecorder") >= 0;
-
-    const signInIfNotSignedIn = async () => {
-        await googleApi.signInIfNotSignedIn();
-        const profile = await googleApi.getCurrentUserProfile();
-        dispatch(setProfile({id: profile.getId(), name: profile.getName(), email: profile.getEmail(), avatar: profile.getImageUrl()}));
-        googleAPIData.isSignedIn = true;
-        googleAPIData.calenderEntries = await googleApi.getCalendarEntries(0, 30);
-        setGoogleAPIData({...googleAPIData});
-    }
-    
-    const addMeetingLink = async (item) => {
-        setUpdateCalenderLoader(item.id);
-        const meetingUrl = `https://${process.env.REACT_APP_API_SERVICE_HOST_NAME}/${getMeetingId()}`;
-        const text = `Click the following link to join the meeting:\n${meetingUrl}`;
-        await googleApi.updateCalendarEntry(item.id, item.calendarId, meetingUrl, text);
-        googleAPIData.calenderEntries = await googleApi.getCalendarEntries(0, 30);
-
-        setGoogleAPIData({...googleAPIData});
-        setUpdateCalenderLoader(null);
-    }
-
-    const Join = async (meetingUrl) => {
-        window.location.href = meetingUrl;
-    }
 
     useEffect(() => {
         SariskaMediaTransport.mediaDevices.enumerateDevices((allDevices) => {
@@ -242,61 +210,11 @@ const Home = () => {
         }
         const createNewLocalTracks = async () => {
             let tracks = [];
-            const options = {
-                devices: ["audio", "video"],
-                resolution
-            };
-
-            // try  {
-            //     const [audioTrack] = await SariskaMediaTransport.createLocalTracks({devices: ["desktop"], resolution});
-            //     tracks.push(audioTrack);
-            // } catch(e) {
-            //     console.log("failed to fetch audio device");
-            // }
-
-            // try  {
-            //     const [audioTrack] = await SariskaMediaTransport.createLocalTracks({devices: ["audio"], resolution});
-            //     tracks.push(audioTrack);
-            // } catch(e) {
-            //     console.log("failed to fetch audio device");
-            // }
-
-            // try  {
-            //     const [videoTrack]  = await SariskaMediaTransport.createLocalTracks({devices: ["video"], resolution});
-            //     tracks.push(videoTrack);
-            // } catch(e) {
-            //     console.log("failed to fetch video device");
-            // }
             setLocalTracks(tracks);
             tracks.forEach(track=>dispatch(addLocalTrack(track)));
         };
         createNewLocalTracks();
     },[])
-
-    useEffect(() => {
-        const googleLogin = async () => {
-            try {
-                googleAPIData.isSignedIn = await googleApi.loadGoogleAPI();
-                if (googleAPIData.isSignedIn) {
-                    const profile = await googleApi.getCurrentUserProfile();
-                    dispatch(setProfile({id: profile.getId(), name: profile.getName(), email: profile.getEmail(), avatar: profile.getImageUrl()}));
-                    googleAPIData.calenderEntries = await googleApi.getCalendarEntries(0, 30);
-                }
-                setGoogleAPIData({...googleAPIData});
-            } catch (e) { }
-            setLoading(false);
-        }
-
-        const microsoftLogin = async () => {
-            try {
-                const response = await microsoftCalendarApi?.isSignedIn();
-            } catch (e) {}
-            setLoading(false);
-        }
-
-        googleLogin();
-        microsoftLogin();
-    }, []);
 
     return (
         <Box className={classes.root}>
