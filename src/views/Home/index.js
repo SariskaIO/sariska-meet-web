@@ -227,7 +227,7 @@ const Home = () => {
     }
 
     useEffect(() => {
-        SariskaMediaTransport.mediaDevices.enumerateDevices((allDevices) => {
+        SariskaMediaTransport.mediaDevices?.enumerateDevices((allDevices) => {
           dispatch(setDevices(allDevices));
         });
       }, []);
