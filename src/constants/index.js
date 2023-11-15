@@ -20,6 +20,7 @@ export const GOOGLE_API_STATES = {
     SIGNED_IN: 2,
     NOT_AVAILABLE: 3
 };
+export const FETCH_PROJECT_CONFIG = `${process.env.REACT_APP_API_SERVICE_HOST}api/v1/misc/fetch-project-config`;
 export const GOOGLE_SCOPE_CALENDAR = 'https://www.googleapis.com/auth/calendar';
 export const GOOGLE_SCOPE_YOUTUBE = 'https://www.googleapis.com/auth/youtube';
 export const GENERATE_TOKEN_URL = `${process.env.REACT_APP_API_SERVICE_HOST}api/v1/misc/generate-token`;

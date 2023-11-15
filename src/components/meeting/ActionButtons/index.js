@@ -40,6 +40,7 @@ import {
   SHARED_DOCUMENT,
   SPEAKER,
   RECORDING_ERROR_CONSTANTS,
+  FETCH_PROJECT_CONFIG,
   WHITEBOARD,
   GET_PRESENTATION_STATUS,
   RECEIVED_PRESENTATION_STATUS,
@@ -260,6 +261,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
   const [chatState, setChatState] = React.useState({
     right: false,
   });
+  const [projectConfig, setProjectConfig] = useState({});
   const [participantState, setParticipantState] = React.useState({
     right: false,
   });
@@ -273,6 +275,32 @@ const ActionButtons = ({ dominantSpeakerId }) => {
     featureStates[actionData.key] = actionData.value;
     setFeatureStates({ ...featureStates });
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const headers = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem("SARISKA_TOKEN")}`
+        };
+  
+        const response = await fetch(FETCH_PROJECT_CONFIG, { method: 'GET', mode: 'cors', headers });
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+  
+        const data = await response.json();
+        console.log(data);
+        setProjectConfig(data);
+      } catch (error) {
+        console.error('Error fetching project config:', error);
+        // You might want to handle the error state here, e.g., set an error state or show an error message to the user.
+      }
+    };
+  
+    fetchData();
+  }, []);
 
   const muteAudio = async () => {
     await audioTrack?.mute();
@@ -723,26 +751,30 @@ const ActionButtons = ({ dominantSpeakerId }) => {
           <CallEndIcon onClick={leaveConference} className={classes.end} />
         </StyledTooltip>
       </Hidden>
+      
       <Box className={classes.permissions}>
-        <StyledTooltip
-          title={
-            audioTrack
-              ? audioTrack?.isMuted()
-                ? "Unmute Audio"
-                : "Mute Audio"
-              : "Check the mic or Speaker"
-          }
-        >
-          {audioTrack ? (
-            audioTrack?.isMuted() ? (
-              <MicOffIcon onClick={unmuteAudio} className={classes.active} />
+      {projectConfig.projectConfig && projectConfig.projectConfig.audio ?
+          <StyledTooltip
+            title={
+              audioTrack
+                ? audioTrack.isMuted()
+                  ? "Unmute Audio"
+                  : "Mute Audio"
+                : "Check the mic or Speaker"
+            }
+          >
+            {audioTrack ? (
+              audioTrack.isMuted() ? (
+                <MicOffIcon onClick={unmuteAudio} className={classes.active} />
+              ) : (
+                <MicIcon onClick={muteAudio} />
+              )
             ) : (
-              <MicIcon onClick={muteAudio} />
-            )
-          ) : (
-            <MicIcon onClick={muteAudio} style={{ cursor: "unset" }} />
-          )}
-        </StyledTooltip>
+              <MicIcon onClick={muteAudio} style={{ cursor: "unset" }} />
+            )}
+          </StyledTooltip> : null
+        }
+        {projectConfig.projectConfig && projectConfig.projectConfig.video ?     
         <StyledTooltip
           title={videoTrack?.isMuted() ? "Unmute Video" : "Mute Video"}
         >
@@ -751,7 +783,9 @@ const ActionButtons = ({ dominantSpeakerId }) => {
           ) : (
             <VideocamIcon onClick={muteVideo} />
           )}
-        </StyledTooltip>
+        </StyledTooltip> : null
+        }
+        {projectConfig.projectConfig && projectConfig.projectConfig.screenSharing ?
         <StyledTooltip title={presenting ? "Stop Presenting" : "Share Screen"}>
           {presenting ? (
             <StopScreenShareIcon className={classnames(classes.active, classes.screenShare)}
@@ -760,7 +794,9 @@ const ActionButtons = ({ dominantSpeakerId }) => {
             <ScreenShareIcon className={ classes.screenShare}
              onClick={shareScreen} />
           )}
-        </StyledTooltip>
+        </StyledTooltip> : null}
+
+        {projectConfig.projectConfig && projectConfig.projectConfig.raiseHand ? 
         <StyledTooltip title={raiseHand ? "Hand Down" : "Raise Hand"}>
           {raiseHand ? (
             <PanToolIcon
@@ -770,7 +806,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
           ) : (
             <PanToolIcon onClick={startRaiseHand} className={classes.panTool} />
           )}
-        </StyledTooltip>
+        </StyledTooltip> : null} 
         <Hidden smDown>
         <StyledTooltip title="Participants Details">
           <GroupIcon onClick={toggleParticipantDrawer("right", true)} />
@@ -782,6 +818,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
         >
           {participantList("right")}
         </DrawerBox>
+        {projectConfig.projectConfig && projectConfig.projectConfig.chat ?  
         <StyledTooltip title="Chat Box">
           <StyledBadge badgeContent={unread}>
             <ChatIcon
@@ -789,7 +826,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
               className={classes.chat}
             />
           </StyledBadge>
-        </StyledTooltip>
+        </StyledTooltip> :  null}
         <DrawerBox
           open={chatState["right"]}
           onClose={toggleChatDrawer("right", false)}
@@ -797,22 +834,23 @@ const ActionButtons = ({ dominantSpeakerId }) => {
           {chatList("right")}
         </DrawerBox>
         <Hidden smDown>
-        <StyledTooltip
-          title={
-            layout.type === SPEAKER || layout.type === PRESENTATION
-              ? "Grid View"
-              : "Speaker View"
-          }
-        >
-          {layout.type === SPEAKER || layout.type === PRESENTATION ? (
-            <ViewListIcon onClick={toggleView} className={classes.subIcon} />
-          ) : (
-            <ViewComfyIcon
-              onClick={toggleView}
-              className={classnames(classes.subIcon, classes.active)}
-            />
-          )}
-        </StyledTooltip>
+          {projectConfig.projectConfig && projectConfig.projectConfig.layout ?
+          <StyledTooltip
+            title={
+              layout.type === SPEAKER || layout.type === PRESENTATION
+                ? "Grid View"
+                : "Speaker View"
+            }
+          >
+            {layout.type === SPEAKER || layout.type === PRESENTATION ? (
+              <ViewListIcon onClick={toggleView} className={classes.subIcon} />
+            ) : (
+              <ViewComfyIcon
+                onClick={toggleView}
+                className={classnames(classes.subIcon, classes.active)}
+              />
+            )}
+          </StyledTooltip> : null}
         </Hidden>
         <Hidden mdUp>
         <StyledTooltip title="Leave Call">

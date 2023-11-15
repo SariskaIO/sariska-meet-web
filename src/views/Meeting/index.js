@@ -175,14 +175,18 @@ const Meeting = () => {
 
   const destroy = async () => {
     if (conference.getParticipantCount() - 1 === 0) {
-      fetch(
-        `https://whiteboard.sariska.io/boards/delete/${conference.connection.name}`,
-        { method: "DELETE", mode: "cors" }
-      );
-      fetch(
-        `https://etherpad.sariska.io/api/1/deletePad?apikey=a97b8845463ab348a91717f9887842edf0df15e395977c2dad12c56bca146d6e&padID=${conference.connection.name}`,
-        { method: "GET", mode: "cors" }
-      );
+      try {
+        await fetch(
+          `https://whiteboard.sariska.io/boards/delete/${conference.connection.name}`,
+          { method: "DELETE", mode: "cors" }
+        );
+        await fetch(
+          `https://etherpad.sariska.io/api/1/deletePad?apikey=a97b8845463ab348a91717f9887842edf0df15e395977c2dad12c56bca146d6e&padID=${conference.connection.name}`,
+          { method: "GET", mode: "cors" }
+        );
+      } catch(e){
+
+      }
     }
     if (conference?.isJoined()) {
       await conference?.leave();
