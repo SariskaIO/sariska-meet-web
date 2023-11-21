@@ -296,7 +296,7 @@ const Home = () => {
                 <Grid item md={12} className={classes.gridChild}>
                     <Box >
                         {
-                            localTracks?.length && <LobbyRoom tracks={localTracks}/>
+                            localTracks?.length > 0 && <LobbyRoom tracks={localTracks}/>
                         }
                     </Box>
                 </Grid>

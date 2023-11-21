@@ -753,7 +753,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
       </Hidden>
       
       <Box className={classes.permissions}>
-      {projectConfig.projectConfig && projectConfig.projectConfig.audio ?
+      {projectConfig.projectConfig && projectConfig.projectConfig.audio === "true" ?
           <StyledTooltip
             title={
               audioTrack
@@ -774,7 +774,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
             )}
           </StyledTooltip> : null
         }
-        {projectConfig.projectConfig && projectConfig.projectConfig.video ?     
+        {projectConfig.projectConfig && projectConfig.projectConfig.video === "true"  ?     
         <StyledTooltip
           title={videoTrack?.isMuted() ? "Unmute Video" : "Mute Video"}
         >
@@ -785,7 +785,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
           )}
         </StyledTooltip> : null
         }
-        {projectConfig.projectConfig && projectConfig.projectConfig.screenSharing ?
+        {projectConfig.projectConfig && projectConfig.projectConfig.screenSharing === "true"  ?
         <StyledTooltip title={presenting ? "Stop Presenting" : "Share Screen"}>
           {presenting ? (
             <StopScreenShareIcon className={classnames(classes.active, classes.screenShare)}
@@ -796,7 +796,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
           )}
         </StyledTooltip> : null}
 
-        {projectConfig.projectConfig && projectConfig.projectConfig.raiseHand ? 
+        {projectConfig.projectConfig && projectConfig.projectConfig.raiseHand === "true" ? 
         <StyledTooltip title={raiseHand ? "Hand Down" : "Raise Hand"}>
           {raiseHand ? (
             <PanToolIcon
@@ -818,7 +818,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
         >
           {participantList("right")}
         </DrawerBox>
-        {projectConfig.projectConfig && projectConfig.projectConfig.chat ?  
+        {projectConfig.projectConfig && projectConfig.projectConfig.chat === "true" ?  
         <StyledTooltip title="Chat Box">
           <StyledBadge badgeContent={unread}>
             <ChatIcon
