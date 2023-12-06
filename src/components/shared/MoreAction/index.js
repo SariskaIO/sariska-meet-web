@@ -380,11 +380,14 @@ export default function MoreAction({
   // };
 
   const startRecording = async () => {
+    console.log('first startRecording', featureStates)
     if (featureStates.recording) {
+      console.log('featureStates.recording')
       return;
     }
 
     if (conference?.getRole() === "none") {
+      console.log('conference?.getRole() === "none"')
       return dispatch(
         showNotification({
           severity: "info",
@@ -421,11 +424,12 @@ export default function MoreAction({
         autoHide: false,
       })
     );
-
+      console.log('befores session')
     const session = await conference.startRecording({
       mode: SariskaMediaTransport.constants.recording.mode.FILE,
       appData: JSON.stringify(s3),
     });
+    console.log('after session', session)
     recordingSession.current = session;
   };
 

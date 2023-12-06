@@ -778,12 +778,15 @@ const ActionButtons = ({ dominantSpeakerId }) => {
   }, [featureStates.whiteboard, featureStates.sharedDocument]);
 
   useEffect(() => {
+    console.log('on mount');
     conference.getParticipantsWithoutHidden().forEach((item) => {
+      console.log('in getParticipantsWithoutHidden', item);
       if (item._properties?.transcribing) {
         action({ key: "caption", value: true });
       }
 
       if (item._properties?.recording) {
+        console.log('item._properties?.recording', item)
         action({ key: "recording", value: true });
       }
 
@@ -864,6 +867,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
     conference.addEventListener(
       SariskaMediaTransport.events.conference.RECORDER_STATE_CHANGED,
       (data) => {
+        console.log('RECORDER_STATE_CHANGED', data);
           if (streamingMode !== 'srs' && data._statusFromJicofo === "on" && data._mode === "stream") {
             conference.setLocalParticipantProperty("streaming", true);
             dispatch(
@@ -882,6 +886,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
           }
 
         if (data._statusFromJicofo === "on" && data._mode === "file") {
+          console.log('data._statusFromJicofo === "on"')
           conference.setLocalParticipantProperty("recording", true);
           dispatch(
             showSnackbar({ autoHide: true, message: "Recording started" })
@@ -891,6 +896,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
         }
 
         if (data._statusFromJicofo === "off" && data._mode === "file") {
+          console.log('data._statusFromJicofo === "off"')
           conference.removeLocalParticipantProperty("recording");
           dispatch(
             showSnackbar({ autoHide: true, message: "Recording stopped" })
@@ -910,6 +916,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
         }
 
         if (data._mode === "file" && data._error) {
+          console.log('data._mode === "file error"', data)
           conference.removeLocalParticipantProperty("recording");
           dispatch(
             showSnackbar({
