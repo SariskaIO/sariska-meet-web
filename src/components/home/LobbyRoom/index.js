@@ -41,6 +41,7 @@ import SettingsBox from "../../meeting/Settings";
 import FancyButton from "../../shared/FancyButton";
 import StyledTooltip from "../../shared/StyledTooltip";
 import Icons from "../../shared/iconList";
+import { EXPERT_ID } from "../../../constants";
 
 
 const LobbyRoom = ({ tracks }) => {
@@ -54,6 +55,7 @@ const LobbyRoom = ({ tracks }) => {
   const [buttonText, setButtonText] = useState("Start Meeting");
   const [accessDenied, setAccessDenied] = useState(false);
   const profile = useSelector((state) => state.profile);
+  const [role, setRole] = useState(profile.role || 'expert');
   const queryParams = useParams();
   const iAmRecorder = window.location.hash.indexOf("iAmRecorder") >= 0;
   const testMode = window.location.hash.indexOf("testMode") >= 0;
@@ -151,6 +153,30 @@ const LobbyRoom = ({ tracks }) => {
       color: color.lightgray1,
       alignItems: "center",
       padding: "0px 8px 8px",
+    },
+    participantRole: {
+      color: color.white,
+      textTransform: 'capitalize',
+      padding: '6px 40px',
+      borderRadius: '10px',
+      width: '9.5vw',
+      border: `1px solid transparent`,
+      '&:hover': {
+        border: `1px solid ${color.white}`,
+        background: 'transparent'
+      },
+      "&.Mui-selected, &.Mui-selected:hover": {
+        color: "white",
+        backgroundColor: 'red'
+      },
+      "&:active": {
+        color: "white",
+        backgroundColor: 'red'
+      },
+      "&:focus": {
+        color: "white",
+        backgroundColor: 'red'
+      }
     },
     action: {
       opacity: .9
@@ -253,6 +279,10 @@ const LobbyRoom = ({ tracks }) => {
 
   const classes = useStyles();
 
+  const handleRoleChange = (role) => {
+    setRole(role);
+  }
+  
   const handleTitleChange = (e) => {
     setMeetingTitle(trimSpace(e.target.value.toLowerCase()));
   };
@@ -266,7 +296,7 @@ const LobbyRoom = ({ tracks }) => {
       dispatch(updateProfile({key: "color", value: null}));
     }
   };
-  
+
   const handleSubmit = async () => {
     if (!meetingTitle) {
       dispatch(
@@ -282,8 +312,8 @@ const LobbyRoom = ({ tracks }) => {
     setLoading(true);
     let avatarColor = profile?.color ?  profile?.color : getRandomColor();
     dispatch(updateProfile({key: "color", value: avatarColor}));
-
-    const token = await getToken(profile, name, avatarColor);
+    let isModerator = role === 'expert' ? true : false;
+    const token = await getToken(profile, name, avatarColor, isModerator);
     const connection = new SariskaMediaTransport.JitsiConnection(
       token,
       meetingTitle,
@@ -305,7 +335,7 @@ const LobbyRoom = ({ tracks }) => {
         if (
           error === SariskaMediaTransport.errors.connection.PASSWORD_REQUIRED
         ) {
-          const token = await getToken(profile, name, moderator.current);
+          const token = await getToken(profile, name, moderator.current, isModerator);
           connection.setToken(token); // token expired, set a new token
         }
         if (
@@ -339,7 +369,8 @@ const LobbyRoom = ({ tracks }) => {
       () => {
         setLoading(false);
         dispatch(addConference(conference));
-        dispatch(setProfile(conference.getLocalUser()));
+        dispatch(setProfile({...conference.getLocalUser(), role}));
+
         dispatch(setMeeting({ meetingTitle }));
         dispatch(addThumbnailColor({participantId: conference?.myUserId(), color:  profile?.color}));
       }
@@ -437,6 +468,14 @@ const LobbyRoom = ({ tracks }) => {
     }
   }, [audioTrack, videoTrack]);
 
+  // useEffect(()=>{
+  //  if(role === 'expert'){ 
+  //   setName(EXPERT_ID)
+  //  }else{
+  //   setName('')
+  //  }
+  // },[role]);
+
 
   useEffect(() => {
     if (queryParams.meetingId) {
@@ -503,6 +542,32 @@ const LobbyRoom = ({ tracks }) => {
             <SettingsIcon onClick={toggleSettingsDrawer("right", true)} />
           </StyledTooltip>
         </Box>
+        <Box sx={{
+          width: '20vw',
+          margin: 'auto',
+          display: 'flex',
+          justifyContent: 'space-between',
+          mt: '2.5vh'
+          }}>
+          <Button variant="contained" 
+          className={classes.participantRole} 
+          onClick={() => handleRoleChange('expert')}
+          style={{
+            background: role === 'expert' ? color.mainGradient : videoTrack?.isMuted() ?  color.whitePointThree : color.whitePointTwo,
+          }}  
+          >
+            Expert
+          </Button>
+          <Button variant="contained" 
+          className={classes.participantRole} 
+          onClick={() => handleRoleChange('user')}
+          style={{
+            background: role === 'user' ? color.mainGradient : videoTrack?.isMuted() ?  color.whitePointThree : color.whitePointTwo,
+          }}  
+          >
+            User
+          </Button>
+        </Box>
         <Box className={classes.action}>
           <div className={classes.wrapper}>
             <Box className={classes.textBox}>
@@ -539,18 +604,18 @@ const LobbyRoom = ({ tracks }) => {
               </> : 
               null}
               <Box className={classes.userBox}>
-                <TextInput
-                  onKeyPress={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleSubmit();
-                    }
-                  }}
-                  label="Username"
-                  width="20vw"
-                  value={name}
-                  onChange={handleUserNameChange}
-                />
+                  <TextInput
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleSubmit();
+                      }
+                    }}
+                    label="Username"
+                    width="20vw"
+                    value={name}
+                    onChange={handleUserNameChange}
+                  />
               </Box>
             </Box>
             

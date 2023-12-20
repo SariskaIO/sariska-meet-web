@@ -111,3 +111,5 @@ export const RECORDING_ERROR_CONSTANTS  = {
 };
 
 export const PARTICIPANTS_VISIBLE_ON_MOBILE = 7;
+
+export const EXPERT_ID = 'tatasariska'

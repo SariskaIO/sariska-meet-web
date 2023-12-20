@@ -81,13 +81,12 @@ const ParticipantGrid = ({ dominantSpeakerId }) => {
             participants.unshift(pinnedParticipant);    
         }
         if(participants.some(participant=> participant._id === p._id && p?.presenter)){
-            console.log('such par', p)
             return;
         }else{
             participants.push({...p});
         }
     });
-    console.log('first unorderedParticipants', unorderedParticipants, participants)
+    
     let { viewportWidth, viewportHeight } = useWindowResize(participants.length);
     let { documentWidth, documentHeight } = useDocumentSize();
     const {

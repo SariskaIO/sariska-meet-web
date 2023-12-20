@@ -1,5 +1,5 @@
 import { useLocation } from "react-router-dom";
-import {GENERATE_TOKEN_URL, GET_PRESIGNED_URL, ENTER_FULL_SCREEN_MODE} from "../constants";
+import {GENERATE_TOKEN_URL, GET_PRESIGNED_URL, ENTER_FULL_SCREEN_MODE, EXPERT_ID} from "../constants";
 import linkifyHtml from 'linkify-html';
 
 const Compressor = require('compressorjs');
@@ -48,7 +48,7 @@ export function createDeferred() {
     return deferred;
 }
 
-export async function getToken(profile, name, avatarColor) {
+export async function getToken(profile, name, avatarColor, isModerator) {
     const body = {
         method: "POST",
         headers: {
@@ -57,16 +57,16 @@ export async function getToken(profile, name, avatarColor) {
         body: JSON.stringify({
             apiKey: process.env.REACT_APP_SARISKA_MEET_APP_API_KEY,
             user: {
-                id: profile.id,
+                id: isModerator ? EXPERT_ID : getMeetingId(),
                 avatar: avatarColor,
                 name: name,
-                email: profile.email
+                email: profile.email,
+                moderator: isModerator
             },
             exp: "48 hours"
         })
     };
 
-    
     try {
         const response = await fetch(GENERATE_TOKEN_URL, body);
         if (response.ok) {

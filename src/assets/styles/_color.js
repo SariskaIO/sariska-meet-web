@@ -4,6 +4,8 @@ export const color = {
     white: '#fff',
     whiteLight: '#aaa',
     whitePointOne: 'rgba(255, 255, 255, 0.1)',
+    whitePointTwo: 'rgba(245, 240, 240, 0.15)',
+    whitePointThree: 'rgba(245, 240, 240, 0.15)',
     primaryLight: '#718EFF',
     primary: '#2616FF',
     primaryDark: '#093234',

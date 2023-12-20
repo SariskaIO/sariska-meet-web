@@ -9,18 +9,20 @@ const initialState = {
     avatar: persistedData.avatar,
     email: persistedData.email,
     id: persistedData.id,
-    moderator: persistedData.moderator
+    moderator: persistedData.moderator,
+    role: persistedData.role
 };
 
 export const profile = (state = initialState, action) => {
     switch (action.type) {
         case SET_PROFILE:
-            const {name, email, avatar, id, moderator, color} = action.payload;
+            const {name, email, avatar, id, moderator, role, color} = action.payload;
             state.name = name;
             state.email = email;
             state.moderator = moderator;
             state.avatar = avatar;
             state.id = id;
+            state.role = role;
             return {...state};
         case UPDATE_PROFILE:
             state[action.payload.key] = action.payload.value;
