@@ -1,7 +1,7 @@
 {
   "name": "demo-kit",
   "version": "0.1.0",
-  "private": "true",
+  "private": true,
   "dependencies": {
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
@@ -33,7 +33,7 @@
     "redux": "^4.1.0",
     "redux-promise": "^0.6.0",
     "redux-thunk": "^2.3.0",
-    "sariska-media-transport": "https://github.com/SariskaIO/sariska-media-transport.git#v2.0.58",
+    "sariska-media-transport": "https://github.com/SariskaIO/sariska-media-transport.git#4.0.2",
     "source-map-explorer": "^2.5.2",
     "web-vitals": "^1.0.1",
     "windows-iana": "^5.0.2"
@@ -47,7 +47,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "deploy:development": "aws s3 cp build s3://meet.dev.sariska.io --recursive --acl public-read && aws cloudfront create-invalidation --distribution-id EITMHLTHLYEHH --paths / /bundle.js /index.html",
-    "deploy:production": "aws s3 cp build s3://meet.sariska.io --recursive --acl public-read && aws cloudfront create-invalidation --distribution-id EG507YR0NNTZF --paths / /bundle.js /index.html"
+    "deploy:production": "aws s3 cp build s3://meet.sariska.io --recursive --acl public-read && aws cloudfront create-invalidation --distribution-id EG507YR0NNTZF --paths / /bundle.js /index.html",
+    "deploy-torture:production": "aws s3 cp build s3://torture.sariska.io --recursive --acl public-read && aws cloudfront create-invalidation --distribution-id E2XOWMRSVG2QAI --paths / /bundle.js /index.html"
   },
   "eslintConfig": {
     "extends": [
