@@ -3,7 +3,9 @@ import {
   SET_MICROPHONE,
   SET_RESOLUTION,
   SET_SPEAKER,
-  SET_DEVICES
+  SET_DEVICES,
+  SET_PICTURE_IN_PICTURE,
+  TOGGLE_COLLABORATION
 } from "../actions/types";
 
 const initialState = {
@@ -12,7 +14,9 @@ const initialState = {
   camera: "",
   devices: null,
   resolution: 720,
-  aspectRatio: 16/9
+  aspectRatio: 16/9,
+  pictureInPicture: false,
+  collaboration: false
 };
 
 export const media = (state = initialState, action) => {
@@ -43,6 +47,15 @@ export const media = (state = initialState, action) => {
       return {
         ...state,
       };
+      case SET_PICTURE_IN_PICTURE:
+        state.pictureInPicture = action.payload;
+        return {...state};
+        
+      case TOGGLE_COLLABORATION:
+        state.collaboration = action.payload;
+        return {
+          ...state
+        };
     default:
       return state;
   }

@@ -1,4 +1,4 @@
-import {SET_GOOGLE_API_STATE, SET_PROFILE, UPDATE_PROFILE, SET_MEETING_TITLE} from "../actions/types";
+import {SET_GOOGLE_API_STATE, SET_PROFILE, UPDATE_PROFILE, SET_MEETING_TITLE,UPDATE_PIP_STATUS} from "../actions/types";
 const persistedData = JSON.parse(localStorage.getItem("SariskaReduxState") || "{}");
 
 const initialState = {
@@ -9,7 +9,9 @@ const initialState = {
     avatar: persistedData.avatar,
     email: persistedData.email,
     id: persistedData.id,
-    moderator: persistedData.moderator
+    moderator: persistedData.moderator,
+    pipEnabled: false
+
 };
 
 export const profile = (state = initialState, action) => {
@@ -32,6 +34,9 @@ export const profile = (state = initialState, action) => {
         case SET_GOOGLE_API_STATE:
             state.googleAPIState = action.payload;
             return {...state};
+        case UPDATE_PIP_STATUS:
+                state[action.payload.key] = action.payload.value;
+                return {...state};
         default:
             return state
     }

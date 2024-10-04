@@ -1,4 +1,4 @@
-import { SET_CAMERA, SET_MICROPHONE, SET_RESOLUTION, SET_SPEAKER, SET_DEVICES } from "./types"
+import { SET_CAMERA, SET_MICROPHONE, SET_RESOLUTION, SET_SPEAKER, SET_DEVICES ,TOGGLE_COLLABORATION,SET_PICTURE_IN_PICTURE} from "./types"
 
 export const setMicrophone = (value) => {
     return {
@@ -33,5 +33,17 @@ export const setYourResolution = (value) => {
     return {
         type: SET_RESOLUTION,
         payload: value
+    }
+}
+export const setPictureInPicture = (mode) => {
+    return {
+        type: SET_PICTURE_IN_PICTURE,
+        payload: mode
+    }
+}
+export const toggleCollaboration = (flag) => {
+    return {
+        type: TOGGLE_COLLABORATION,
+        payload: flag
     }
 }
