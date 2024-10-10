@@ -2,13 +2,14 @@ import {
   Box,
   makeStyles,
   Typography,
+  Tooltip,
 } from "@material-ui/core";
-import React, { useState } from "react";
+import React, { useState,useEffect,useRef } from "react";
 import { color } from "../../../assets/styles/_color";
 import Video from "../Video";
 import Audio from "../Audio";
 import PanTool from "@material-ui/icons/PanTool";
-import { useSelector } from "react-redux";
+import {useDispatch, useSelector } from "react-redux";
 import classnames from "classnames";
 import { calculateSteamHeightAndExtraDiff, isMobileOrTab } from "../../../utils";
 import SubTitle from "../SubTitle";
@@ -157,6 +158,7 @@ const VideoBox = ({
     },
   }));
   const classes = useStyles();
+  const [isPipEnabled, setIsPipEnabled] = useState(false);
   const { pinnedParticipant, raisedHandParticipantIds } = useSelector(
     (state) => state.layout
   );
@@ -173,6 +175,7 @@ const VideoBox = ({
   const subtitle = useSelector((state) => state.subtitle);
   const conference = useSelector((state) => state.conference);
   const { documentWidth, documentHeight } = useDocumentSize();
+  const layout = useSelector((state) => state.layout);
 
 
 
@@ -194,6 +197,10 @@ const VideoBox = ({
       return `${(videoStreamHeight * 16) / 9}px`
     }
     
+    useEffect(()=>{
+      setIsPipEnabled(layout.pipEnabled);
+    }, [layout.pipEnabled]);
+
   return (
     <Box
       style={{ width: `${width}px`, height: `${height}px` }}
@@ -234,10 +241,16 @@ const VideoBox = ({
             height: `${videoStreamHeight}px`,
             left: `-${videoStreamDiff / 2}px`,
             position: "absolute",
+            right: 0,
+            left: 0,
+            top: 0,
+            bottom: 0,
+            backgroundColor: isPipEnabled ?  "black" : "default",
+            margin: "auto",
           }}
           className={classes.videoWrapper}
         >
-          <Video isPresenter={isPresenter} track={videoTrack} />
+          <Video isPresenter={isPresenter}isPipEnabled={isPipEnabled} track={videoTrack} />
         </Box>
       )}
       <Box

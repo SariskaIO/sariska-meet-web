@@ -64,3 +64,10 @@ export const setUserResolution = (value) => {
         payload: value
     }
 }
+
+export const togglePip = (flag) => {
+    return {
+        type: Constants.TOGGLE_PIP,
+        payload: flag
+    }
+}

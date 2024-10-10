@@ -1,4 +1,4 @@
-import {SET_PROFILE, SET_GOOGLE_API_STATE, UPDATE_PROFILE, SET_MEETING_TITLE} from "./types"
+import {SET_PROFILE, UPDATE_PIP_STATUS,SET_GOOGLE_API_STATE, UPDATE_PROFILE, SET_MEETING_TITLE} from "./types"
 
 export const setProfile = (profile) => {
     return {
@@ -24,6 +24,13 @@ export const updateProfile = (profile) => {
 export const setGoogleAPIState = (state) => {
     return {
         type: SET_GOOGLE_API_STATE,
+        payload: state
+    }
+}
+
+export const updatePipStatus = (state) => {
+    return {
+        type:UPDATE_PIP_STATUS,
         payload: state
     }
 }

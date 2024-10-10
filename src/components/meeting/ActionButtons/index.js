@@ -8,6 +8,7 @@ import {
   Tooltip,
   Typography,
 } from "@material-ui/core";
+import PictureInPictureAltIcon from "@material-ui/icons/PictureInPictureAlt";
 import React, { useEffect, useRef, useState } from "react";
 import SariskaMediaTransport from "sariska-media-transport";
 import { color } from "../../../assets/styles/_color";
@@ -19,20 +20,20 @@ import MicIcon from "@material-ui/icons/Mic";
 import MicOffIcon from "@material-ui/icons/MicOff";
 import VideocamIcon from "@material-ui/icons/Videocam";
 import VideocamOffIcon from "@material-ui/icons/VideocamOff";
-import VolumeUpIcon from '@material-ui/icons/VolumeUp';
-import VideoCallIcon from '@material-ui/icons/VideoCall';
-import VolumeOffIcon from '@material-ui/icons/VolumeOff';
-import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import VolumeUpIcon from "@material-ui/icons/VolumeUp";
+import VideoCallIcon from "@material-ui/icons/VideoCall";
+import VolumeOffIcon from "@material-ui/icons/VolumeOff";
+import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import ScreenShareIcon from "@material-ui/icons/ScreenShare";
-import StopScreenShareIcon from '@material-ui/icons/StopScreenShare';
+import StopScreenShareIcon from "@material-ui/icons/StopScreenShare";
 import PanToolIcon from "@material-ui/icons/PanTool";
 import GroupIcon from "@material-ui/icons/Group";
 import ChatIcon from "@material-ui/icons/Chat";
 import ViewListIcon from "@material-ui/icons/ViewList";
 import ViewComfyIcon from "@material-ui/icons/ViewComfy";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
-import CloseIcon from '@material-ui/icons/Close';
-import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
+import CloseIcon from "@material-ui/icons/Close";
+import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import {
   addLocalTrack,
   localTrackMutedChanged,
@@ -66,6 +67,8 @@ import {
   requestFullscreen,
   startStreamingInSRSMode,
   stopStreamingInSRSMode,
+  startPipMode,
+  exitPipMode,
 } from "../../../utils";
 import classNames from "classnames";
 import ParticipantDetails from "../../shared/ParticipantDetails";
@@ -103,7 +106,7 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.down("md")]: {
       bottom: "0px",
       background: color.secondaryDark,
-      height: '72px'
+      height: "72px",
     },
     "& svg": {
       padding: "8px",
@@ -111,7 +114,7 @@ const useStyles = makeStyles((theme) => ({
       marginRight: "2px",
       [theme.breakpoints.down("md")]: {
         background: color.secondary,
-        borderRadius: '50%',
+        borderRadius: "50%",
         marginRight: "6px !important",
       },
       "&:hover": {
@@ -149,7 +152,7 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: "8px",
     [theme.breakpoints.down("md")]: {
       background: color.secondary,
-      borderRadius: '50%',
+      borderRadius: "50%",
       marginRight: "6px",
     },
   },
@@ -162,9 +165,9 @@ const useStyles = makeStyles((theme) => ({
     marginRight: "24px",
     [theme.breakpoints.down("sm")]: {
       backgroundColor: "transparent",
-      margin: 'auto',
-      position: 'relative',
-      bottom: '0px'
+      margin: "auto",
+      position: "relative",
+      bottom: "0px",
     },
   },
   end: {
@@ -189,25 +192,25 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   liveBox: {
-    display: 'flex',
-    alignItems: 'center',
+    display: "flex",
+    alignItems: "center",
     border: `1px solid ${color.red}`,
-    borderRadius: '30px',
-    paddingLeft: '8px',
-    paddingRight: '8px',
-    marginLeft: '8px',
-    '&:hover': {
-      cursor: 'pointer'
-    }
+    borderRadius: "30px",
+    paddingLeft: "8px",
+    paddingRight: "8px",
+    marginLeft: "8px",
+    "&:hover": {
+      cursor: "pointer",
+    },
   },
   dot: {
-    padding: '2px !important',
-    fontSize: '1rem'
+    padding: "2px !important",
+    fontSize: "1rem",
   },
   live: {
     color: color.red,
-    padding: '6px 6px 6px 0',
-    minWidth: '36px',
+    padding: "6px 6px 6px 0",
+    minWidth: "36px",
   },
   subIcon: {
     border: "none !important",
@@ -242,16 +245,16 @@ const useStyles = makeStyles((theme) => ({
     lineHeight: "1",
     [theme.breakpoints.down("sm")]: {
       marginLeft: 0,
-      fontSize: '24px'
-    }
+      fontSize: "24px",
+    },
   },
   participantHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
     "& svg": {
-      color: color.white
-    }
+      color: color.white,
+    },
   },
   chatList: {
     height: "100%",
@@ -262,8 +265,8 @@ const useStyles = makeStyles((theme) => ({
     fontSize: "20px",
     padding: "10px !important",
     [theme.breakpoints.down("md")]: {
-      marginRight: '6px !important'
-    }
+      marginRight: "6px !important",
+    },
   },
   moreActionList: {
     height: "100%",
@@ -304,15 +307,19 @@ const ActionButtons = ({ dominantSpeakerId }) => {
   const [moreActionState, setMoreActionState] = React.useState({
     right: false,
   });
-
+  const [isCollaborationActive, setIsCollaborationActive] = useState(false);
   const [openLivestreamDialog, setOpenLivestreamDialog] = useState(false);
   const [broadcasts, setBroadcasts] = useState([]);
   const [streamingUrls, setStreamingUrls] = useState([]);
-  const [streamKey, setStreamKey] = useState('');
+  const [streamKey, setStreamKey] = useState("");
   const [isLowLatencyUrl, setIsLowLatencyUrl] = useState(false);
-
   const skipResize = false;
   const streamingSession = useRef(null);
+  const remoteTrack = useSelector((state) => state.remoteTrack);
+  const remoteTracks = remoteTrack[Object.keys(remoteTrack)[0]];
+  const remoteVideoTrack = remoteTracks?.find(
+    (track) => track.getType() === "video"
+  );
 
   const action = (actionData) => {
     featureStates[actionData.key] = actionData.value;
@@ -339,21 +346,21 @@ const ActionButtons = ({ dominantSpeakerId }) => {
     dispatch(localTrackMutedChanged());
   };
 
-  const muteAll = async(type) => {
-    if(!conference.isModerator()){
+  const muteAll = async (type) => {
+    if (!conference.isModerator()) {
       return dispatch(
         showNotification({
           message: "You are not moderator",
           severity: "warning",
           autoHide: true,
         })
-      )
+      );
     }
     let participants = conference?.getParticipantsWithoutHidden();
     try {
       for (const participant of participants) {
         const participantId = participant.getId();
-  
+
         // Mute audio for the participant
         await muteParticipant(conference, participantId, type);
       }
@@ -363,11 +370,11 @@ const ActionButtons = ({ dominantSpeakerId }) => {
           severity: "success",
           autoHide: true,
         })
-      )
+      );
     } catch (error) {
-      console.error('Error muting participants:', error);
+      console.error("Error muting participants:", error);
     }
-  }
+  };
 
   const shareScreen = async () => {
     let desktopTrack;
@@ -439,7 +446,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
         })
       );
     }
-    if(streamingMode === 'srs'){
+    if (streamingMode === "srs") {
       dispatch(
         showSnackbar({
           severity: "info",
@@ -447,16 +454,19 @@ const ActionButtons = ({ dominantSpeakerId }) => {
           autoHide: false,
         })
       );
-      const streamingResponse = await startStreamingInSRSMode(profile.meetingTitle, streamKey);
-       if(streamingResponse.started){
+      const streamingResponse = await startStreamingInSRSMode(
+        profile.meetingTitle,
+        streamKey
+      );
+      if (streamingResponse.started) {
         setStreamingUrls(streamingResponse);
-          conference.setLocalParticipantProperty("streaming", true);
-            dispatch(
-              showSnackbar({ autoHide: true, message: "Live streaming started" })
-            );
-          action({ key: "streaming", value: true }); 
-       } 
-    }else{
+        conference.setLocalParticipantProperty("streaming", true);
+        dispatch(
+          showSnackbar({ autoHide: true, message: "Live streaming started" })
+        );
+        action({ key: "streaming", value: true });
+      }
+    } else {
       await googleApi.signInIfNotSignedIn();
       let youtubeBroadcasts;
 
@@ -502,16 +512,18 @@ const ActionButtons = ({ dominantSpeakerId }) => {
         autoHide: false,
       })
     );
-    if(streamingMode === 'srs'){
-       const streamingResponse = await startStreamingInSRSMode(profile.meetingTitle);
-       if(streamingResponse.started){
-          conference.setLocalParticipantProperty("streaming", true);
-            dispatch(
-              showSnackbar({ autoHide: true, message: "Live streaming started" })
-            );
-          action({ key: "streaming", value: true }); 
-       }
-    }else{
+    if (streamingMode === "srs") {
+      const streamingResponse = await startStreamingInSRSMode(
+        profile.meetingTitle
+      );
+      if (streamingResponse.started) {
+        conference.setLocalParticipantProperty("streaming", true);
+        dispatch(
+          showSnackbar({ autoHide: true, message: "Live streaming started" })
+        );
+        action({ key: "streaming", value: true });
+      }
+    } else {
       // const session = await conference.startRecording({
       //   mode: SariskaMediaTransport.constants.recording.mode.STREAM,
       //   streamId: `rtmp://srs-origin-0.socs:1935/gstreamer/${streamName}`,
@@ -519,19 +531,23 @@ const ActionButtons = ({ dominantSpeakerId }) => {
       // });
       const flags = {
         is_direct_ingestion: true,
-        is_low_latency: true
-      }
-      const streamingResponse = await startStreamingInSRSMode(null, null, flags);
-         if(streamingResponse.started){
-          const session = await conference.startRecording({
-            mode: SariskaMediaTransport.constants.recording.mode.STREAM,
-            streamId: streamingResponse.rtmp_ingest_url,
+        is_low_latency: true,
+      };
+      const streamingResponse = await startStreamingInSRSMode(
+        null,
+        null,
+        flags
+      );
+      if (streamingResponse.started) {
+        const session = await conference.startRecording({
+          mode: SariskaMediaTransport.constants.recording.mode.STREAM,
+          streamId: streamingResponse.rtmp_ingest_url,
           //  streamId: `rtmp://a.rtmp.youtube.com/live2/${streamName}`,
-          });
-          setIsLowLatencyUrl(true);
-          setStreamingUrls(streamingResponse)
-          streamingSession.current = session;
-        } 
+        });
+        setIsLowLatencyUrl(true);
+        setStreamingUrls(streamingResponse);
+        streamingSession.current = session;
+      }
     }
     setOpenLivestreamDialog(false);
   };
@@ -563,21 +579,21 @@ const ActionButtons = ({ dominantSpeakerId }) => {
     setOpenLivestreamDialog(false);
     const flags = {
       is_direct_ingestion: true,
-      is_low_latency: true
-    }
+      is_low_latency: true,
+    };
     const streamingResponse = await startStreamingInSRSMode(null, null, flags);
-       if(streamingResponse.started){
-        const session = await conference.startRecording({
-          mode: SariskaMediaTransport.constants.recording.mode.STREAM,
-          streamId: "rtmp://streaming-origin-nlb-tcp-c078e5862a925d80.elb.ap-south-1.amazonaws.com:1935/xcq9u1vjc9udbq44/b38c2fa6f74043d38a44922a3ad961fa"
-          //streamId: streamingResponse.rtmp_ingest_url,
+    if (streamingResponse.started) {
+      const session = await conference.startRecording({
+        mode: SariskaMediaTransport.constants.recording.mode.STREAM,
+        streamId:
+          "rtmp://streaming-origin-nlb-tcp-c078e5862a925d80.elb.ap-south-1.amazonaws.com:1935/xcq9u1vjc9udbq44/b38c2fa6f74043d38a44922a3ad961fa",
+        //streamId: streamingResponse.rtmp_ingest_url,
         //  streamId: `rtmp://a.rtmp.youtube.com/live2/${streamName}`,
-        });
-        setIsLowLatencyUrl(true);
-        setStreamingUrls(streamingResponse)
-        streamingSession.current = session;
-       } 
-      
+      });
+      setIsLowLatencyUrl(true);
+      setStreamingUrls(streamingResponse);
+      streamingSession.current = session;
+    }
   };
 
   const stopStreaming = async () => {
@@ -593,19 +609,23 @@ const ActionButtons = ({ dominantSpeakerId }) => {
         })
       );
     }
-    if(streamingMode === 'srs'){
-     const streamingResponse = await stopStreamingInSRSMode(profile.meetingTitle);
-      if(!streamingResponse.started){
+    if (streamingMode === "srs") {
+      const streamingResponse = await stopStreamingInSRSMode(
+        profile.meetingTitle
+      );
+      if (!streamingResponse.started) {
         setStreamingUrls({});
-          conference.removeLocalParticipantProperty("streaming");
-            dispatch(
-              showSnackbar({ autoHide: true, message: "Live streaming stopped" })
-            );
-          action({ key: "streaming", value: false });
+        conference.removeLocalParticipantProperty("streaming");
+        dispatch(
+          showSnackbar({ autoHide: true, message: "Live streaming stopped" })
+        );
+        action({ key: "streaming", value: false });
       }
-    }else{
-      const streamingResponse = await stopStreamingInSRSMode(profile.meetingTitle);
-      if(!streamingResponse.started){
+    } else {
+      const streamingResponse = await stopStreamingInSRSMode(
+        profile.meetingTitle
+      );
+      if (!streamingResponse.started) {
         setIsLowLatencyUrl(false);
         setStreamingUrls({});
       }
@@ -638,10 +658,10 @@ const ActionButtons = ({ dominantSpeakerId }) => {
     setParticipantState({ ...participantState, [anchor]: open });
   };
 
-  const handleStreamKeyChange=(e)=>{
+  const handleStreamKeyChange = (e) => {
     setStreamKey(e.target.value);
-  }
-  
+  };
+
   const liveList = (anchor) => (
     <>
       <Box className={classes.participantHeader}>
@@ -649,10 +669,18 @@ const ActionButtons = ({ dominantSpeakerId }) => {
           Live Streaming Details
         </Typography>
         <Hidden mdUp>
-          <CloseIcon onClick={toggleLiveDrawer("right", false)}/>
+          <CloseIcon onClick={toggleLiveDrawer("right", false)} />
         </Hidden>
       </Box>
-      <LiveStreamingDetails streamingUrls={streamingUrls} featureStates={featureStates} stopStreaming={stopStreaming} startStreaming={startStreaming} handleStreamKeyChange={handleStreamKeyChange} streamKey={streamKey} isLowLatencyUrl={isLowLatencyUrl}/>
+      <LiveStreamingDetails
+        streamingUrls={streamingUrls}
+        featureStates={featureStates}
+        stopStreaming={stopStreaming}
+        startStreaming={startStreaming}
+        handleStreamKeyChange={handleStreamKeyChange}
+        streamKey={streamKey}
+        isLowLatencyUrl={isLowLatencyUrl}
+      />
     </>
   );
 
@@ -663,7 +691,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
           Participants
         </Typography>
         <Hidden mdUp>
-          <CloseIcon onClick={toggleParticipantDrawer("right", false)}/>
+          <CloseIcon onClick={toggleParticipantDrawer("right", false)} />
         </Hidden>
       </Box>
       <ParticipantDetails />
@@ -688,7 +716,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
           Messages
         </Typography>
         <Hidden mdUp>
-          <CloseIcon onClick={toggleChatDrawer("right", false)}/>
+          <CloseIcon onClick={toggleChatDrawer("right", false)} />
         </Hidden>
       </Box>
       <ChatPanel />
@@ -764,11 +792,11 @@ const ActionButtons = ({ dominantSpeakerId }) => {
         featureStates={featureStates}
         setLayoutAndFeature={setLayoutAndFeature}
         onClick={toggleMoreActionDrawer("right", false)}
-        participantOnClick = {toggleParticipantDrawer("right", true)}
-        participantTitle = "Participants Details"
-        chatOnClick = {toggleChatDrawer("right", true)}
+        participantOnClick={toggleParticipantDrawer("right", true)}
+        participantTitle="Participants Details"
+        chatOnClick={toggleChatDrawer("right", true)}
         chatTitle="Chat Box"
-        layoutOnClick = {toggleView}
+        layoutOnClick={toggleView}
       />
     </>
   );
@@ -941,22 +969,30 @@ const ActionButtons = ({ dominantSpeakerId }) => {
     conference.addEventListener(
       SariskaMediaTransport.events.conference.RECORDER_STATE_CHANGED,
       (data) => {
-          if (streamingMode !== 'srs' && data._statusFromJicofo === "on" && data._mode === "stream") {
-            conference.setLocalParticipantProperty("streaming", true);
-            dispatch(
-              showSnackbar({ autoHide: true, message: "Live streaming started" })
-            );
-            action({ key: "streaming", value: true });
-            localStorage.setItem("streaming_session_id", data?._sessionID);
-          }
-          
-          if (streamingMode !== 'srs' && data._statusFromJicofo === "off" && data._mode === "stream") {
-            conference.removeLocalParticipantProperty("streaming");
-            dispatch(
-              showSnackbar({ autoHide: true, message: "Live streaming stopped" })
-            );
-            action({ key: "streaming", value: false });
-          }
+        if (
+          streamingMode !== "srs" &&
+          data._statusFromJicofo === "on" &&
+          data._mode === "stream"
+        ) {
+          conference.setLocalParticipantProperty("streaming", true);
+          dispatch(
+            showSnackbar({ autoHide: true, message: "Live streaming started" })
+          );
+          action({ key: "streaming", value: true });
+          localStorage.setItem("streaming_session_id", data?._sessionID);
+        }
+
+        if (
+          streamingMode !== "srs" &&
+          data._statusFromJicofo === "off" &&
+          data._mode === "stream"
+        ) {
+          conference.removeLocalParticipantProperty("streaming");
+          dispatch(
+            showSnackbar({ autoHide: true, message: "Live streaming stopped" })
+          );
+          action({ key: "streaming", value: false });
+        }
 
         if (data._statusFromJicofo === "on" && data._mode === "file") {
           conference.setLocalParticipantProperty("recording", true);
@@ -975,7 +1011,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
           action({ key: "recording", value: false });
         }
 
-        if (streamingMode !== 'srs' && data._mode === "stream" && data._error) {
+        if (streamingMode !== "srs" && data._mode === "stream" && data._error) {
           conference.removeLocalParticipantProperty("streaming");
           dispatch(
             showSnackbar({
@@ -1004,7 +1040,17 @@ const ActionButtons = ({ dominantSpeakerId }) => {
     dispatch(clearAllReducers());
     history.push("/leave");
   };
-  
+
+  useEffect(() => {
+    setIsCollaborationActive(layout.pipEnabled);
+  }, [layout.pipEnabled]);
+
+  useEffect(() => {
+    if (layout.pipEnabled) {
+      exitPipMode();
+    }
+  }, [remoteVideoTrack]);
+
   return (
     <Box id="footer" className={classes.root}>
       <Hidden smDown>
@@ -1015,16 +1061,19 @@ const ActionButtons = ({ dominantSpeakerId }) => {
         </Box>
       </Hidden>
       <Hidden smDown>
-        <Box sx={{display: 'flex'}}>
-        <StyledTooltip title="Leave Call">
-          <CallEndIcon onClick={leaveConference} className={classes.end} />
-        </StyledTooltip>
-        <StyledTooltip title={"Go Live"}>
-          <Box className={classes.liveBox} onClick={toggleLiveDrawer("right", true)} >          
-            <FiberManualRecordIcon className={classes.dot} />
-            <Button className={classes.live}>{"Go Live"}</Button>
-          </Box>
-        </StyledTooltip>
+        <Box sx={{ display: "flex" }}>
+          <StyledTooltip title="Leave Call">
+            <CallEndIcon onClick={leaveConference} className={classes.end} />
+          </StyledTooltip>
+          <StyledTooltip title={"Go Live"}>
+            <Box
+              className={classes.liveBox}
+              onClick={toggleLiveDrawer("right", true)}
+            >
+              <FiberManualRecordIcon className={classes.dot} />
+              <Button className={classes.live}>{"Go Live"}</Button>
+            </Box>
+          </StyledTooltip>
         </Box>
         <DrawerBox
           open={liveState["right"]}
@@ -1069,23 +1118,23 @@ const ActionButtons = ({ dominantSpeakerId }) => {
             <VideocamIcon onClick={muteVideo} />
           )}
         </StyledTooltip>
-        <StyledTooltip
-          title={"Mute All Cameras"}
-        >
-            <VideoCallIcon onClick={() => muteAll('video')} />
+        <StyledTooltip title={"Mute All Cameras"}>
+          <VideoCallIcon onClick={() => muteAll("video")} />
         </StyledTooltip>
-        <StyledTooltip
-          title={"Mute All Microphones"}
-        >
-          <VolumeUpIcon onClick={() => muteAll('audio')} />
+        <StyledTooltip title={"Mute All Microphones"}>
+          <VolumeUpIcon onClick={() => muteAll("audio")} />
         </StyledTooltip>
         <StyledTooltip title={presenting ? "Stop Presenting" : "Share Screen"}>
           {presenting ? (
-            <StopScreenShareIcon className={classnames(classes.active, classes.screenShare)}
-            onClick={stopPresenting} />
+            <StopScreenShareIcon
+              className={classnames(classes.active, classes.screenShare)}
+              onClick={stopPresenting}
+            />
           ) : (
-            <ScreenShareIcon className={ classes.screenShare}
-             onClick={shareScreen} />
+            <ScreenShareIcon
+              className={classes.screenShare}
+              onClick={shareScreen}
+            />
           )}
         </StyledTooltip>
         <StyledTooltip title={raiseHand ? "Hand Down" : "Raise Hand"}>
@@ -1097,6 +1146,30 @@ const ActionButtons = ({ dominantSpeakerId }) => {
           ) : (
             <PanToolIcon onClick={startRaiseHand} className={classes.panTool} />
           )}
+        </StyledTooltip>
+        <StyledTooltip
+          title={
+            layout.pipEnabled
+              ? "Exit Picure-in-Picture"
+              : "Enable Picure-in-Picture"
+          }
+        >
+          <PictureInPictureAltIcon
+            disabled={!("pictureInPictureEnabled" in document)}
+            id="pict"
+            onClick={() => {
+              if (isCollaborationActive) {
+                exitPipMode();
+              } else {
+                startPipMode();
+              }
+            }}
+            sx={{
+              fill: layout.pipEnabled ? color.primaryColor : color.white,
+              "&:hover": { pointer: "cursor" },
+              zIndex: 2,
+            }}
+          />
         </StyledTooltip>
         <Hidden smDown>
           <StyledTooltip title="Participants Details">
@@ -1124,28 +1197,28 @@ const ActionButtons = ({ dominantSpeakerId }) => {
           {chatList("right")}
         </DrawerBox>
         <Hidden smDown>
-        <StyledTooltip
-          title={
-            layout.type === SPEAKER || layout.type === PRESENTATION
-              ? "Grid View"
-              : "Speaker View"
-          }
-        >
-          {layout.type === SPEAKER || layout.type === PRESENTATION ? (
-            <ViewListIcon onClick={toggleView} className={classes.subIcon} />
-          ) : (
-            <ViewComfyIcon
-              onClick={toggleView}
-              className={classnames(classes.subIcon, classes.active)}
-            />
-          )}
-        </StyledTooltip>
+          <StyledTooltip
+            title={
+              layout.type === SPEAKER || layout.type === PRESENTATION
+                ? "Grid View"
+                : "Speaker View"
+            }
+          >
+            {layout.type === SPEAKER || layout.type === PRESENTATION ? (
+              <ViewListIcon onClick={toggleView} className={classes.subIcon} />
+            ) : (
+              <ViewComfyIcon
+                onClick={toggleView}
+                className={classnames(classes.subIcon, classes.active)}
+              />
+            )}
+          </StyledTooltip>
         </Hidden>
         <Hidden mdUp>
-        <StyledTooltip title="Leave Call">
-          <CallEndIcon onClick={leaveConference} className={classes.end} />
-        </StyledTooltip>
-      </Hidden>
+          <StyledTooltip title="Leave Call">
+            <CallEndIcon onClick={leaveConference} className={classes.end} />
+          </StyledTooltip>
+        </Hidden>
 
         <StyledTooltip title="More Actions">
           <MoreVertIcon

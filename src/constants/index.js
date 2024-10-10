@@ -38,6 +38,7 @@ export const CHAT = "CHAT";
 export const PRESENTATION = "PRESENTATION";
 export const GRID = "GRID";
 export const SPEAKER = "SPEAKER";
+export const PIP = "PIP";
 export const SET_PRESENTATION_TYPE = "SET_PRESENTATION_TYPE";
 export const SHARED_DOCUMENT = "SHARED_DOCUMENT";
 export const WHITEBOARD = "WHITEBOARD";
