@@ -479,13 +479,13 @@ const LobbyRoom = ({ tracks }) => {
           <Typography className={classes.header}>Create Meeting</Typography>
         }
         </Box>
-        <Box className={!queryParams.meetingId ? classes.permissions : classes.joinPermissions}>
+        <Box className={!queryParams.meetingId ? classes.permissions : classes.joinPermissions} style={{justifyContent:"center"}}>
           {audioTrack?.isMuted() ? (
-            <StyledTooltip title="Unmute Audio">
+            <StyledTooltip title="Unmute Audio" style={{marginRight:"40px"}}>
               <MicOffIcon onClick={unmuteAudioLocalTrack} />
             </StyledTooltip>
           ) : (
-            <StyledTooltip title="Mute Audio">
+            <StyledTooltip title="Mute Audio" style={{marginRight:"40px"}}>
               <MicIcon onClick={muteAudioLocalTrack} />
             </StyledTooltip>
           )}
@@ -498,9 +498,9 @@ const LobbyRoom = ({ tracks }) => {
               <VideocamIcon onClick={muteVideoLocalTrack} />
             </StyledTooltip>
           )}
-          <StyledTooltip title="Settings">
+          {/* <StyledTooltip title="Settings">
             <SettingsIcon onClick={toggleSettingsDrawer("right", true)} />
-          </StyledTooltip>
+          </StyledTooltip> */}
         </Box>
         <Box className={classes.action}>
           <div className={classes.wrapper}>
