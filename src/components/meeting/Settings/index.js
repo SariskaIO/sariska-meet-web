@@ -287,7 +287,7 @@ const SettingsBox = ({ tracks, onClick }) => {
     });
     await conference.replaceTrack(audioTrack, newAudioTrack);
     dispatch(updateLocalTrack(audioTrack, newAudioTrack));
-    dispatch(setCamera(microphoneDeviceId));
+    dispatch(setMicrophone(microphoneDeviceId));
   };
 
   const handleMicrophoneClose = () => {
