@@ -76,6 +76,9 @@ const ParticipantGrid = ({ dominantSpeakerId }) => {
     
     unorderedParticipants.forEach(p=>{
         if(p.presenter === true) return;
+        if(p?._identity?.user?.name === 'recorder'){
+            unorderedParticipants.filter(p => p._id === pinnedParticipantId)[0]
+        }
         if(p._id === pinnedParticipantId){
             let pinnedParticipant = unorderedParticipants.filter(p => p._id === pinnedParticipantId)[0];
             participants.unshift(pinnedParticipant);    

@@ -177,7 +177,6 @@ const VideoBox = ({
   const { documentWidth, documentHeight } = useDocumentSize();
 
 
-
   const avatarActiveClasses = classnames(classes.avatarBox);
   const { videoStreamHeight, videoStreamDiff } =
     calculateSteamHeightAndExtraDiff(
@@ -195,8 +194,10 @@ const VideoBox = ({
       }
       return `${(videoStreamHeight * 16) / 9}px`
     }
-    
+    console.log('participantDetails', participantDetails);
   return (
+    <>
+    {participantDetails?.name === 'recorder' ? <></> : 
     <Box
       style={{ width: `${width}px`, height: `${height}px` }}
       onMouseEnter={() => setVisibleParticipantFeatures(true)}
@@ -286,6 +287,8 @@ const VideoBox = ({
         </Box>
       )}
     </Box>
+    }
+    </>
   );
 };
 
