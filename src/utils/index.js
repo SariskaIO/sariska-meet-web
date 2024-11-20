@@ -791,8 +791,18 @@ export const isParticipantLocal = (conference, id) => {
   return conference?.myUserId() === id;
 };
 
+export const getRecorderId = (conference) => {
+  let participants = getParticipants(conference);
+  
+  return participants?.find(p => p?._identity?.user?.name === 'recorder')?._id;
+}
+
+export const getParticipantCountsWORecorder = (conference) => {
+  let participants = getParticipants(conference);
+  return participants?.filter(p => p?._identity?.user?.name !== 'recorder')?.length;
+}
+
 const handleCollaborartion = () => {
-  console.log("handleCollaborartion");
   let profile = store?.getState()?.profile;
   let media = store?.getState()?.media;
 
@@ -966,6 +976,7 @@ function addConferenceListeners(conference) {
 }
 let worker;
 let isPipEnabled = false;
+let canvas;
 
 function startWorker() {
   worker = new Worker("worker.js", { name: "Video worker" });
@@ -976,10 +987,18 @@ function startWorker() {
   };
 
   const fps = 25;
+  const div = document.createElement('div');
   // Create a new destination canvas
   const dst_cnv = document.createElement("canvas");
-  dst_cnv.width = "640";
-  dst_cnv.height = "480";
+  canvas = dst_cnv;
+  div.appendChild(dst_cnv);
+  dst_cnv.width = "360";
+  dst_cnv.height = "360";
+  const ctx = dst_cnv.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, dst_cnv.width, dst_cnv.height)
+  div.style.background = 'red';
+  div.style.zIndex = 9999;
 
   function renderCanvas(participantId, keyName, kind) {
     for (const [action, handler] of actionHandlers) {
@@ -1000,9 +1019,9 @@ function startWorker() {
     let key1 = Object.keys(store?.getState()?.remoteTrack)[0];
 
     let remoteParticipantName =
-      store.getState()?.conference?.participants[key1]?._identity?.user?.name;
+      store.getState()?.conference?.participants.get(`${key1}`)?._identity?.user?.name;
     let localParticipantName = store?.getState()?.profile?.name;
-
+    
     let track1 = store?.getState()?.localTrack[1];
     let reader1;
 
@@ -1098,8 +1117,11 @@ function startWorker() {
     worker.terminate();
     worker = new Worker("worker.js", { name: "Video worker" });
     const dst_cnv = document.createElement("canvas");
+    canvas = dst_cnv;
     dst_cnv.width = "360";
     dst_cnv.height = "360";
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, dst_cnv.width, dst_cnv.height)
 
     if (user1 && user2) {
       dst_cnv.height = "360";
@@ -1109,6 +1131,7 @@ function startWorker() {
       dst_cnv.height = "180";
     }
 
+    video.style.transform = 'scaleX(-1)';
     video.srcObject = dst_cnv.captureStream();
     let offscreen = dst_cnv.transferControlToOffscreen();
 
@@ -1128,7 +1151,7 @@ function startWorker() {
     if (reader2) {
       ownershipArray.push(reader2);
     }
-
+    
     worker.postMessage(
       {
         user1: user1
@@ -1141,9 +1164,9 @@ function startWorker() {
           ? {
               name: remoteParticipantName,
               color:
-                store.getState()?.conference?.participants[
-                  Object.keys(store.getState().remoteTrack)[0]
-                ]?._identity?.user?.avatar,
+                store.getState()?.conference?.participants?.get(
+                  Object.keys(store.getState().remoteTrack)[0])
+                ?._identity?.user?.avatar,
             }
           : undefined,
         frame_source1: user1 ? reader1 : undefined,
@@ -1198,13 +1221,21 @@ function startWorker() {
   video.srcObject = dst_cnv.captureStream();
 
   video.addEventListener("enterpictureinpicture", (event) => {
+    video.style.position = 'fixed';
+    video.style.top = 0;
     isPipEnabled = true;
     store.dispatch(togglePip(true));
   });
 
   video.addEventListener("loadedmetadata", async (event) => {
+    video.style.transform = 'scaleX(-1)';
+    video.style.position = 'fixed';
+    video.style.top = 0;
     await video.play();
-    video.requestPictureInPicture();
+    video.requestPictureInPicture().then(() => {
+        video.style.transform = "scaleX(-1)";
+    }).catch(console.error);
+    video.style.transform = "scaleX(-1)";
   });
 
   video.addEventListener(
@@ -1213,6 +1244,12 @@ function startWorker() {
       try {
         isPipEnabled = false;
         store.dispatch(togglePip(false));
+        if(dst_cnv){
+          worker.terminate();
+          const ctx = dst_cnv.getContext('2d');
+          ctx.clearRect(0, 0, dst_cnv.width, dst_cnv.height);
+          dst_cnv.remove();
+        }
       } catch (e) {}
     },
     false
@@ -1225,4 +1262,36 @@ export const startPipMode = async () => {
   startWorker();
 };
 
-export const exitPipMode = async () => {};
+export const exitPipMode = async () => {
+    if (document.pictureInPictureElement) {
+        document.exitPictureInPicture()
+            .then(() => {
+                console.log("Exited PiP mode");
+                try {
+                  isPipEnabled = false;
+                  store.dispatch(togglePip(false));
+                 // worker.terminate();
+                  // if(canvas){
+                  //   const ctx = canvas.getContext('2d');
+                  //   ctx.clearRect(0, 0, canvas.width, canvas.height);
+                  //   canvas.remove();
+                  //   console.log("Canvas deleted");
+                  // }
+                } catch (e) {
+                  console.log('error in pip', e)
+                }
+            })
+            .catch((error) => {
+                console.error("Failed to exit PiP mode:", error);
+            });
+    }
+};
+
+
+export function isCapitalLetter(char) {
+  return /^[A-Z]$/.test(char);
+}
+
+export function containsCapitalLetter(str) {
+  return /[A-Z]/.test(str);
+}

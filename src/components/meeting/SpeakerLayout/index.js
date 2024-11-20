@@ -7,6 +7,8 @@ import {useWindowResize} from "../../../hooks/useWindowResize";
 import {useDocumentSize} from "../../../hooks/useDocumentSize";
 import classnames from "classnames";
 import * as Constants from "../../../constants";
+import { getParticipantCountsWORecorder, getRecorderId } from '../../../utils';
+import PIPFallbackScreen from '../../shared/PIPFallbackScreen';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -21,6 +23,7 @@ const useStyles = makeStyles((theme) => ({
 const SpeakerLayout = ({dominantSpeakerId}) => {
     const conference = useSelector(state => state.conference);
     const layout = useSelector(state=>state.layout);
+    const isPipEnabled = useSelector(state => state.layout?.pipEnabled);
     const totalParticipantGrid = conference?.getParticipantCount()+layout.presenterParticipantIds.length;
     let {viewportWidth, viewportHeight} = useWindowResize(totalParticipantGrid);
     const {documentWidth, documentHeight} = useDocumentSize();
@@ -30,8 +33,15 @@ const SpeakerLayout = ({dominantSpeakerId}) => {
     const myUserId = conference.myUserId();
     const classes = useStyles();
     let largeVideoId, isPresenter, participantTracks, participantDetails, justifyContent;
-
-    if ( conference.getParticipantCount() === 2 ) {
+    
+    if(myUserId === getRecorderId(conference)){
+        return;
+    }
+    if(conference.getLocalUser()?.name === 'recorder'){
+        return;
+    }
+    
+    if ( getParticipantCountsWORecorder(conference) === 2 ) {
         largeVideoId = conference.getParticipantsWithoutHidden()[0]?._id;
     }
     largeVideoId = layout.pinnedParticipant.participantId || layout.presenterParticipantIds.slice(0).pop() || largeVideoId || dominantSpeakerId || myUserId;
@@ -40,6 +50,7 @@ const SpeakerLayout = ({dominantSpeakerId}) => {
         isPresenter = false;
     }
     participantTracks = remoteTracks[largeVideoId];
+    
     participantDetails =  conference.participants.get(largeVideoId)?._identity?.user; 
 
     if (largeVideoId === conference.myUserId()){
@@ -77,7 +88,8 @@ const SpeakerLayout = ({dominantSpeakerId}) => {
     }
     
     return (
-        <Box style={{justifyContent}}  className={activeClasses} >
+        <Box style={{justifyContent, height: isPipEnabled ? 'calc(100vh - 48px)' : 'inherit'}}  className={activeClasses} >
+            {isPipEnabled ? <PIPFallbackScreen /> : <>
             <VideoBox
                 isFilmstrip={true}
                 isTranscription={true}
@@ -100,6 +112,7 @@ const SpeakerLayout = ({dominantSpeakerId}) => {
                 localTracks={localTracks} 
                 remoteTracks={remoteTracks}
             />
+            </>}
         </Box>
     )
 }
