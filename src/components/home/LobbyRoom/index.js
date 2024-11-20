@@ -17,7 +17,8 @@ import {
   getToken,
   trimSpace,
   detectUpperCaseChar,
-  getRandomColor
+  getRandomColor,
+  containsCapitalLetter
 } from "../../../utils";
 import { addThumbnailColor } from "../../../store/actions/color";
 import { useDispatch, useSelector } from "react-redux";
@@ -254,8 +255,30 @@ const LobbyRoom = ({ tracks }) => {
   const classes = useStyles();
 
   const handleTitleChange = (e) => {
-    setMeetingTitle(trimSpace(e.target.value.toLowerCase()));
+    const value = e.target.value;
+    if(value.includes(" ")){
+      dispatch(
+        showNotification({
+          message: "Space is not allowed",
+          severity: "warning",
+          autoHide: true,
+        })
+      );
+      return;
+    }
+    if(containsCapitalLetter(value)){
+      dispatch(
+        showNotification({
+          message: "Capital Letter is not allowed",
+          severity: "warning",
+          autoHide: true,
+        })
+      );
+      return;
+    }
+    setMeetingTitle(trimSpace(value));
   };
+
 
   const handleUserNameChange = (e) => {
     setName(e.target.value);
