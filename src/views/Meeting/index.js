@@ -339,6 +339,9 @@ const Meeting = () => {
     conference.addEventListener(
       SariskaMediaTransport.events.conference.LOBBY_USER_JOINED,
       (id, displayName) => {
+        if(displayName === 'recorder'){
+          return conference.lobbyApproveAccess(id);
+        }
         new Audio(
           "https://sdk.sariska.io/knock_0b1ea0a45173ae6c10b084bbca23bae2.ogg"
         ).play();

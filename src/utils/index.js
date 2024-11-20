@@ -1000,7 +1000,7 @@ function startWorker() {
     let key1 = Object.keys(store?.getState()?.remoteTrack)[0];
 
     let remoteParticipantName =
-      store.getState()?.conference?.participants[key1]?._identity?.user?.name;
+      store.getState()?.conference?.participants.get(`${key1}`)?._identity?.user?.name;
     let localParticipantName = store?.getState()?.profile?.name;
 
     let track1 = store?.getState()?.localTrack[1];
