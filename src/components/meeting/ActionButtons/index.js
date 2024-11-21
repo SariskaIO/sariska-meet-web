@@ -421,7 +421,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
     conference.setLocalParticipantProperty("presenting", "stop");
     setPresenting(false);
   };
-
+  
   const startRaiseHand = () => {
     conference.setLocalParticipantProperty("handraise", "start");
     setRaiseHand(true);
