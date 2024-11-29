@@ -421,7 +421,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
     conference.setLocalParticipantProperty("presenting", "stop");
     setPresenting(false);
   };
-  
+
   const startRaiseHand = () => {
     conference.setLocalParticipantProperty("handraise", "start");
     setRaiseHand(true);
@@ -1126,7 +1126,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
             <VolumeUpIcon onClick={() => muteAll("audio")} />
           </StyledTooltip>
         </Hidden>
-        
+
         <StyledTooltip title={presenting ? "Stop Presenting" : "Share Screen"}>
           {presenting ? (
             <StopScreenShareIcon
@@ -1176,12 +1176,9 @@ const ActionButtons = ({ dominantSpeakerId }) => {
             />
           </StyledTooltip>
         </Hidden>
-        
-        <Hidden smDown>
-          <StyledTooltip title="Participants Details">
-            <GroupIcon onClick={toggleParticipantDrawer("right", true)} />
-          </StyledTooltip>
-        </Hidden>
+        <StyledTooltip title="Participants Details">
+          <GroupIcon onClick={toggleParticipantDrawer("right", true)} />
+        </StyledTooltip>
         <DrawerBox
           open={participantState["right"]}
           onClose={toggleParticipantDrawer("right", false)}
@@ -1205,11 +1202,13 @@ const ActionButtons = ({ dominantSpeakerId }) => {
         <Hidden smDown>
           <StyledTooltip
             title={
+              
               layout.type === SPEAKER || layout.type === PRESENTATION
                 ? "Grid View"
                 : "Speaker View"
             }
           >
+            
             {layout.type === SPEAKER || layout.type === PRESENTATION ? (
               <ViewListIcon onClick={toggleView} className={classes.subIcon} />
             ) : (
@@ -1219,7 +1218,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
               />
             )}
           </StyledTooltip>
-        </Hidden>
+          </Hidden>
         <Hidden mdUp>
           <StyledTooltip title="Leave Call">
             <CallEndIcon onClick={leaveConference} className={classes.end} />
