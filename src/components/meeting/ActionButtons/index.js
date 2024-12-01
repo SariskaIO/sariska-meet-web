@@ -4,6 +4,7 @@ import {
   Button,
   Drawer,
   Hidden,
+  useMediaQuery,
   makeStyles,
   Tooltip,
   Typography,
@@ -192,7 +193,7 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   liveBox: {
-    display: "flex",
+    display: "flex",   
     alignItems: "center",
     border: `1px solid ${color.red}`,
     borderRadius: "30px",
@@ -276,7 +277,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ActionButtons = ({ dominantSpeakerId }) => {
+const ActionButtons = ({ dominantSpeakerId}) => {
+  const isMobile = useMediaQuery(theme => theme.breakpoints.down('sm'));
   const history = useHistory();
   const audioTrack = useSelector((state) => state.localTrack).find((track) =>
     track.isAudioTrack()
@@ -325,7 +327,6 @@ const ActionButtons = ({ dominantSpeakerId }) => {
     featureStates[actionData.key] = actionData.value;
     setFeatureStates({ ...featureStates });
   };
-
   const muteAudio = async () => {
     await audioTrack?.mute();
     dispatch(localTrackMutedChanged());
@@ -1035,7 +1036,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
       }
     );
   }, []);
-
+ 
   const leaveConference = () => {
     dispatch(clearAllReducers());
     history.push("/leave");
@@ -1127,6 +1128,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
           </StyledTooltip>
         </Hidden>
 
+        <Hidden smDown>
         <StyledTooltip title={presenting ? "Stop Presenting" : "Share Screen"}>
           {presenting ? (
             <StopScreenShareIcon
@@ -1140,6 +1142,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
             />
           )}
         </StyledTooltip>
+        </Hidden>
         <StyledTooltip title={raiseHand ? "Hand Down" : "Raise Hand"}>
           {raiseHand ? (
             <PanToolIcon
@@ -1190,7 +1193,7 @@ const ActionButtons = ({ dominantSpeakerId }) => {
             <ChatIcon
               onClick={toggleChatDrawer("right", true)}
               className={classes.chat}
-            />
+            /> 
           </StyledBadge>
         </StyledTooltip>
         <DrawerBox
@@ -1199,16 +1202,15 @@ const ActionButtons = ({ dominantSpeakerId }) => {
         >
           {chatList("right")}
         </DrawerBox>
-        <Hidden smDown>
-          <StyledTooltip
+        
+
+         <StyledTooltip
             title={
-              
-              layout.type === SPEAKER || layout.type === PRESENTATION
-                ? "Grid View"
-                : "Speaker View"
-            }
+              layout.type === PRESENTATION  || layout.type === SPEAKER 
+                ? "Speaker View"
+                : "Grid View"
+            }   
           >
-            
             {layout.type === SPEAKER || layout.type === PRESENTATION ? (
               <ViewListIcon onClick={toggleView} className={classes.subIcon} />
             ) : (
@@ -1218,9 +1220,9 @@ const ActionButtons = ({ dominantSpeakerId }) => {
               />
             )}
           </StyledTooltip>
-          </Hidden>
+ 
         <Hidden mdUp>
-          <StyledTooltip title="Leave Call">
+          <StyledTooltip title="Leave Call end ">
             <CallEndIcon onClick={leaveConference} className={classes.end} />
           </StyledTooltip>
         </Hidden>
